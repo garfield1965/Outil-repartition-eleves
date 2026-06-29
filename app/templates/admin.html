@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration — Répartition des élèves</title>
+  <link rel="stylesheet" href="/static/css/theme.css?v={{ asset_version }}">
+</head>
+<body>
+
+  <header class="entete">
+    <div>
+      <h1><span class="craie">⚙️</span> Administration</h1>
+      <div class="sous-titre">Référentiel des niveaux et propriétés, réinitialisation des données</div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a class="bouton secondaire" href="/" style="text-decoration:none; display:inline-flex; align-items:center;">← Retour au tableau</a>
+    </div>
+  </header>
+
+  <main class="plateau-admin">
+
+    <section class="section-admin">
+      <div class="section-admin__entete">
+        <h2>Niveaux</h2>
+        <button class="bouton secondaire bouton-petit" id="bouton-creer-niveau">+ Ajouter un niveau</button>
+      </div>
+      <div class="tableau-referentiel" id="tableau-niveaux">
+        {% for n in niveaux %}
+          <div class="ligne-referentiel" data-id="{{ n.id }}">
+            <span class="pastille-legende" style="background:{{ n.couleur }}"></span>
+            <span class="ligne-referentiel__libelle">{{ n.libelle }}</span>
+            <span class="ligne-referentiel__detail">ordre {{ n.ordre }}</span>
+            <span class="ligne-referentiel__actions">
+              <button class="icone-action bouton-modifier-niveau" title="Modifier"
+                      data-id="{{ n.id }}" data-libelle="{{ n.libelle }}"
+                      data-couleur="{{ n.couleur }}" data-ordre="{{ n.ordre }}">✎</button>
+              <button class="icone-action bouton-supprimer-niveau" title="Supprimer"
+                      data-id="{{ n.id }}" data-libelle="{{ n.libelle }}">🗑</button>
+            </span>
+          </div>
+        {% endfor %}
+        {% if not niveaux %}
+          <p class="legende-vide">Aucun niveau pour le moment</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="section-admin">
+      <div class="section-admin__entete">
+        <h2>Propriétés</h2>
+        <button class="bouton secondaire bouton-petit" id="bouton-creer-propriete">+ Ajouter une propriété</button>
+      </div>
+      <div class="tableau-referentiel" id="tableau-proprietes">
+        {% for p in proprietes %}
+          <div class="ligne-referentiel" data-id="{{ p.id }}">
+            <span class="pastille-legende" style="background:{{ p.couleur }}"></span>
+            <span class="ligne-referentiel__libelle">{{ p.libelle }}</span>
+            <span class="ligne-referentiel__actions">
+              <button class="icone-action bouton-modifier-propriete" title="Modifier"
+                      data-id="{{ p.id }}" data-libelle="{{ p.libelle }}" data-couleur="{{ p.couleur }}">✎</button>
+              <button class="icone-action bouton-supprimer-propriete" title="Supprimer"
+                      data-id="{{ p.id }}" data-libelle="{{ p.libelle }}">🗑</button>
+            </span>
+          </div>
+        {% endfor %}
+        {% if not proprietes %}
+          <p class="legende-vide">Aucune propriété pour le moment</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="section-admin">
+      <div class="section-admin__entete">
+        <h2>Règles de gestion</h2>
+        <button class="bouton secondaire bouton-petit" id="bouton-creer-regle">+ Ajouter une règle</button>
+      </div>
+      <p style="margin-top:-6px; margin-bottom:14px;">
+        Définissez des contraintes (effectif maximum, nombre maximum d'élèves
+        porteurs d'une propriété, équilibre filles/garçons...) : une alerte
+        ⚠️ apparaît automatiquement sur les classes qui les dépassent.
+      </p>
+      <div class="tableau-referentiel" id="tableau-regles">
+        {% for r in regles %}
+          <div class="ligne-referentiel" data-id="{{ r.id }}">
+            <span class="pastille-legende" style="background:{{ '#cccccc' if not r.actif else '#FF8C6B' }}"></span>
+            <span class="ligne-referentiel__libelle">
+              {{ r.libelle }}
+              {% if not r.actif %}<span class="legende-vide"> (inactive)</span>{% endif %}
+            </span>
+            <span class="ligne-referentiel__detail">
+              {{ types_regle[r.type_regle] }}
+              {% if r.type_regle == "propriete_max" and r.propriete %} — {{ r.propriete.libelle }}{% endif %}
+              · seuil {{ r.seuil }}{{ "%" if r.type_regle == "ecart_sexe_max" else "" }}
+            </span>
+            <span class="ligne-referentiel__actions">
+              <button class="icone-action bouton-modifier-regle" title="Modifier"
+                      data-id="{{ r.id }}" data-libelle="{{ r.libelle }}"
+                      data-type-regle="{{ r.type_regle }}" data-seuil="{{ r.seuil }}"
+                      data-propriete-id="{{ r.propriete_id or '' }}"
+                      data-actif="{{ 'true' if r.actif else 'false' }}">✎</button>
+              <button class="icone-action bouton-supprimer-regle" title="Supprimer"
+                      data-id="{{ r.id }}" data-libelle="{{ r.libelle }}">🗑</button>
+            </span>
+          </div>
+        {% endfor %}
+        {% if not regles %}
+          <p class="legende-vide">Aucune règle de gestion pour le moment</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="section-admin section-admin--danger">
+      <div class="section-admin__entete">
+        <h2>Réinitialisation</h2>
+      </div>
+      <p>
+        Supprime toutes les années, classes, élèves et historiques de déplacement.
+        <strong>Les niveaux, propriétés et règles de gestion ci-dessus sont conservés.</strong>
+        Utile en début d'année scolaire pour repartir d'un tableau vide sans
+        reconfigurer le référentiel.
+      </p>
+      <button class="bouton bouton-danger" id="bouton-reinitialiser">🗑 Réinitialiser les données</button>
+    </section>
+
+  </main>
+
+  {# ---------- Modale niveau ---------- #}
+  <div id="modale-niveau" class="modale-fond" hidden>
+    <form id="form-niveau" class="modale-carte">
+      <h2 id="modale-niveau-titre">Nouveau niveau</h2>
+      <input type="hidden" id="champ-niveau-id">
+
+      <label class="champ">
+        Libellé
+        <input type="text" id="champ-niveau-libelle" required placeholder="ex: CE2">
+      </label>
+
+      <label class="champ">
+        Ordre d'affichage
+        <input type="number" id="champ-niveau-ordre" value="0" min="0" step="1">
+      </label>
+
+      <fieldset class="champ">
+        <legend>Couleur</legend>
+        <div class="ligne-couleur-libre">
+          <div class="liste-couleurs" data-pour="niveau">
+            {% for c in ["#FF8C6B","#6FB7E8","#6FCF97","#FFD27D","#B79CED","#F4D35E","#7ED6C1","#F49AC2"] %}
+              <button type="button" class="pastille-couleur" data-couleur="{{ c }}" style="background:{{ c }}"></button>
+            {% endfor %}
+          </div>
+          <label class="selecteur-couleur-libre" title="Choisir une couleur personnalisée">
+            <input type="color" id="champ-niveau-couleur-libre" value="#FF8C6B">
+            <span>+ personnalisée</span>
+          </label>
+        </div>
+        <input type="hidden" id="champ-niveau-couleur" value="#FF8C6B">
+      </fieldset>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-niveau">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  {# ---------- Modale propriété ---------- #}
+  <div id="modale-propriete" class="modale-fond" hidden>
+    <form id="form-propriete" class="modale-carte">
+      <h2 id="modale-propriete-titre">Nouvelle propriété</h2>
+      <input type="hidden" id="champ-propriete-id">
+
+      <label class="champ">
+        Libellé
+        <input type="text" id="champ-propriete-libelle" required placeholder="ex: ULIS">
+      </label>
+
+      <fieldset class="champ">
+        <legend>Couleur</legend>
+        <div class="ligne-couleur-libre">
+          <div class="liste-couleurs" data-pour="propriete">
+            {% for c in ["#FF8C6B","#6FB7E8","#6FCF97","#FFD27D","#B79CED","#F4D35E","#7ED6C1","#F49AC2"] %}
+              <button type="button" class="pastille-couleur" data-couleur="{{ c }}" style="background:{{ c }}"></button>
+            {% endfor %}
+          </div>
+          <label class="selecteur-couleur-libre" title="Choisir une couleur personnalisée">
+            <input type="color" id="champ-propriete-couleur-libre" value="#FF8C6B">
+            <span>+ personnalisée</span>
+          </label>
+        </div>
+        <input type="hidden" id="champ-propriete-couleur" value="#FF8C6B">
+      </fieldset>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-propriete">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  {# ---------- Modale règle de gestion ---------- #}
+  <div id="modale-regle" class="modale-fond" hidden>
+    <form id="form-regle" class="modale-carte">
+      <h2 id="modale-regle-titre">Nouvelle règle</h2>
+      <input type="hidden" id="champ-regle-id">
+
+      <label class="champ">
+        Libellé
+        <input type="text" id="champ-regle-libelle" required placeholder="ex: Effectif maximum">
+      </label>
+
+      <label class="champ">
+        Type de règle
+        <select id="champ-regle-type">
+          {% for valeur, libelle in types_regle.items() %}
+            <option value="{{ valeur }}">{{ libelle }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="champ" id="champ-regle-propriete-wrapper">
+        Propriété concernée
+        <select id="champ-regle-propriete">
+          {% for p in proprietes %}
+            <option value="{{ p.id }}">{{ p.libelle }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="champ">
+        <span id="champ-regle-seuil-libelle">Seuil maximum (effectif)</span>
+        <input type="number" id="champ-regle-seuil" min="0" step="1" required>
+      </label>
+
+      <label class="case-niveau" style="align-self:flex-start;">
+        <input type="checkbox" id="champ-regle-actif" checked>
+        Règle active
+      </label>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-regle">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/js/admin.js?v={{ asset_version }}"></script>
+</body>
+</html>

@@ -1,0 +1,635 @@
+/*
+  Identité visuelle : "le tableau de la classe"
+  -----------------------------------------------
+  Palette douce et chaleureuse (papier + craie de couleur), pensée pour des
+  enseignants qui passent du temps face à cet écran en juin. Les classes sont
+  des "fiches cartonnées" légèrement penchées, les élèves des badges ronds
+  qu'on déplace à la main, comme des étiquettes sur un vrai tableau.
+*/
+
+:root {
+  --bg: #FAF8F3;
+  --ink: #2E2C45;
+  --ink-soft: #6b6884;
+  --ligne: #E4DFD3;
+  --carton: #FFFFFF;
+
+  --coral: #FF8C6B;
+  --sky: #6FB7E8;
+  --mint: #6FCF97;
+  --peach: #FFD27D;
+
+  --ombre: 0 2px 6px rgba(46, 44, 69, 0.08);
+  --ombre-forte: 0 10px 24px rgba(46, 44, 69, 0.18);
+
+  --rayon: 18px;
+  --rayon-badge: 999px;
+
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(111,183,232,0.06) 0, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255,140,107,0.06) 0, transparent 40%);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", "Segoe UI Rounded", Roboto, ui-rounded,
+               "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- En-tête ---------- */
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 36px;
+  border-bottom: 2px dashed var(--ligne);
+}
+
+.entete h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entete h1 .craie {
+  font-size: 1.6rem;
+  transform: rotate(-8deg);
+  display: inline-block;
+}
+
+.entete .sous-titre {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.bouton {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: var(--ink);
+  color: white;
+  box-shadow: var(--ombre);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.bouton:hover { transform: translateY(-2px); box-shadow: var(--ombre-forte); }
+.bouton.secondaire {
+  background: white;
+  color: var(--ink);
+  border: 2px solid var(--ligne);
+}
+
+/* ---------- Disposition générale : 2 colonnes + frontière ---------- */
+
+.plateau {
+  display: flex;
+  gap: 18px;
+  padding: 28px 36px 60px;
+  align-items: flex-start;
+}
+
+.bloc-colonne { flex: 1; min-width: 0; }
+
+.colonne-titre {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  color: var(--ink-soft);
+  margin: 0 0 14px 6px;
+}
+
+.colonne-titre-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bouton-petit { padding: 6px 14px; font-size: 0.78rem; }
+
+/* Le canevas est une zone libre : chaque carte de classe y est positionnée
+   en absolu (left/top en pixels), et l'enseignant la déplace à la souris
+   comme un post-it sur un tableau. */
+.colonne-canvas {
+  position: relative;
+  min-height: 1100px;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 39px, var(--ligne) 39px, var(--ligne) 40px
+  );
+  background-color: rgba(255,255,255,0.35);
+  border-radius: var(--rayon);
+  border: 1px solid var(--ligne);
+}
+
+.carte-wrapper {
+  position: absolute;
+  width: 300px;
+  z-index: 1;
+}
+.carte-wrapper.au-premier-plan { z-index: 50; }
+
+.frontiere {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 60px;
+  color: var(--ink-soft);
+  flex: 0 0 auto;
+  position: sticky;
+  top: 100px;
+}
+.frontiere .fleche { font-size: 1.6rem; animation: glisser 2.4s ease-in-out infinite; }
+@keyframes glisser {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50% { transform: translateX(6px); opacity: 1; }
+}
+
+/* ---------- Carte de classe ---------- */
+
+.carte-classe {
+  background: var(--carton);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  border-top: 6px solid var(--accent, var(--sky));
+  transform: rotate(var(--inclinaison, 0deg));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+.carte-classe:hover { box-shadow: var(--ombre-forte); }
+.carte-wrapper.en-deplacement .carte-classe { transform: rotate(0deg) scale(1.02); box-shadow: var(--ombre-forte); }
+
+.carte-classe__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 10px;
+}
+.carte-classe__poignee { cursor: grab; touch-action: none; }
+.carte-wrapper.en-deplacement .carte-classe__poignee { cursor: grabbing; }
+
+.carte-classe__nom { font-weight: 800; font-size: 1.05rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.carte-classe__actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+
+.carte-classe__effectif {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.carte-classe__effectif.complet { color: #1d7a4c; background: #e3f8ec; }
+.carte-classe__effectif.depasse { color: #b3401f; background: #ffe9e1; }
+
+.icone-action {
+  border: none;
+  background: var(--bg);
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.icone-action:hover { background: var(--ligne); }
+
+.carte-classe__corps { padding: 0 16px 16px; }
+
+/* Carte repliée : on cache stats + zone de dépôt, ne reste que le bandeau */
+.carte-classe--repliee .carte-classe__corps { display: none; }
+.carte-classe--repliee { padding-bottom: 2px; }
+
+/* ---------- Alertes de dépassement de règles de gestion ---------- */
+
+.badge-alerte {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #b3401f;
+  background: #ffe9e1;
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  cursor: help;
+  animation: pulser-alerte 1.8s ease-in-out infinite;
+}
+@keyframes pulser-alerte {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(179, 64, 31, 0.25); }
+  50% { box-shadow: 0 0 0 4px rgba(179, 64, 31, 0.12); }
+}
+
+.carte-classe__alertes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.alerte-regle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b3401f;
+  background: #fff0ea;
+  border: 1px solid #f3b6a4;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.carte-classe__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  margin-top: 12px;
+}
+.carte-classe__stats--proprietes {
+  margin-top: -4px;
+}
+.stat-pastille--propriete {
+  border-style: dashed;
+}
+.stat-pastille {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 9px 4px 7px;
+  background: color-mix(in srgb, var(--niveau-couleur, var(--ligne)) 18%, white);
+  border: 1px solid color-mix(in srgb, var(--niveau-couleur, var(--ligne)) 55%, white);
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.stat-pastille::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--niveau-couleur, var(--ligne));
+  flex: 0 0 auto;
+}
+.stat-pastille b { color: var(--ink); }
+
+.zone-depot {
+  min-height: 86px;
+  border: 2px dashed var(--ligne);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-content: flex-start;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.zone-depot.survol-actif {
+  background: #fff7ed;
+  border-color: var(--coral);
+}
+.zone-depot:empty::after {
+  content: "Glissez un élève ici";
+  color: var(--ligne);
+  font-size: 0.8rem;
+  font-style: italic;
+  margin: auto;
+}
+
+/* ---------- Icône élève (le coeur du drag&drop) ---------- */
+
+.eleve {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 78px;
+  cursor: grab;
+  user-select: none;
+  position: relative;
+}
+
+.eleve__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--rayon-badge);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: var(--ombre);
+  border: 3px solid white;
+  outline: 3px solid var(--niveau-couleur, var(--sky));
+  background: color-mix(in srgb, var(--niveau-couleur, var(--sky)) 35%, white);
+  transition: transform 0.12s ease;
+}
+.eleve--fille .eleve__avatar { box-shadow: var(--ombre), inset 0 0 0 2px #FF8C6B; }
+.eleve--garcon .eleve__avatar { box-shadow: var(--ombre), inset 0 0 0 2px #6FB7E8; }
+
+.eleve:hover .eleve__avatar { transform: scale(1.08) rotate(-4deg); }
+
+.eleve.selectionne .eleve__avatar {
+  outline: 3px solid var(--coral);
+  box-shadow: 0 0 0 4px rgba(255,140,107,0.35);
+}
+.eleve.selectionne .eleve__nom { color: var(--coral); }
+
+.eleve__nom {
+  margin-top: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+}
+.eleve__prenom { display: block; color: var(--ink-soft); font-weight: 600; }
+
+.eleve__badges {
+  position: absolute;
+  top: -4px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+}
+.badge-propriete {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* état pendant le drag (géré par SortableJS via ces classes) */
+.sortable-ghost { opacity: 0.35; }
+.sortable-drag .eleve__avatar { box-shadow: var(--ombre-forte); transform: scale(1.12) rotate(6deg); }
+
+/* petite pulsation de confirmation à l'arrivée */
+@keyframes poser {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.eleve--vient-d-arriver .eleve__avatar { animation: poser 0.35s ease; }
+
+/* ---------- Bandeau d'import ---------- */
+
+.bandeau-import {
+  margin: 0 36px;
+  background: var(--carton);
+  border-radius: var(--rayon);
+  border: 2px dashed var(--ligne);
+  padding: 14px 18px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+/* Même piège que pour les modales : une classe avec display:flex l'emporte
+   sur le comportement par défaut de [hidden] si on ne le rend pas explicite. */
+.bandeau-import[hidden] {
+  display: none;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: var(--ombre-forte);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+.toast.visible { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 900px) {
+  .plateau { flex-direction: column; }
+  .frontiere { display: none; }
+}
+
+/* ---------- Modale création / modification de classe ---------- */
+
+.modale-fond {
+  position: fixed;
+  inset: 0;
+  background: rgba(46, 44, 69, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+/* L'attribut hidden doit l'emporter sur le display:flex ci-dessus :
+   une règle [hidden] seule a la même spécificité qu'une classe, on la
+   rend donc plus spécifique pour être sûr qu'elle gagne. */
+.modale-fond[hidden] {
+  display: none;
+}
+
+.modale-carte {
+  background: var(--carton);
+  border-radius: var(--rayon);
+  padding: 26px 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--ombre-forte);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modale-carte h2 { margin: 0 0 4px; font-size: 1.2rem; }
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+/* Même piège que pour les modales/bandeaux : nécessaire pour que les champs
+   conditionnels (ex: "Propriété concernée") se masquent vraiment. */
+.champ[hidden] {
+  display: none;
+}
+.champ legend { font-weight: 700; font-size: 0.85rem; color: var(--ink-soft); padding: 0; margin-bottom: 4px; }
+.champ input[type="text"], .champ input[type="number"] {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  border: 2px solid var(--ligne);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+.champ input:focus { outline: none; border-color: var(--sky); }
+
+.liste-niveaux { display: flex; flex-wrap: wrap; gap: 10px; }
+.case-niveau {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; font-weight: 600; color: var(--ink);
+  background: var(--bg); border-radius: 999px; padding: 5px 12px 5px 8px;
+  cursor: pointer; border: 1px solid var(--ligne);
+}
+.case-niveau span {
+  width: 10px; height: 10px; border-radius: 999px; display: inline-block;
+}
+
+.liste-couleurs { display: flex; gap: 8px; }
+.pastille-couleur {
+  width: 28px; height: 28px; border-radius: 999px; border: 3px solid white;
+  box-shadow: 0 0 0 1px var(--ligne);
+  cursor: pointer;
+}
+.pastille-couleur.selectionnee { box-shadow: 0 0 0 3px var(--ink); }
+
+.ligne-couleur-libre {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.selecteur-couleur-libre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-left: 1px solid var(--ligne);
+  padding-left: 14px;
+}
+.selecteur-couleur-libre input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 3px solid white;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--ligne);
+  cursor: pointer;
+  background: none;
+}
+.selecteur-couleur-libre.selectionnee input[type="color"] { box-shadow: 0 0 0 3px var(--ink); }
+
+.modale-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+
+/* ---------- Panneau légende (couleurs niveaux / propriétés) ---------- */
+
+.panneau-legende {
+  position: absolute;
+  top: 78px;
+  right: 36px;
+  background: var(--carton);
+  border-radius: 16px;
+  box-shadow: var(--ombre-forte);
+  border: 1px solid var(--ligne);
+  padding: 16px 18px;
+  display: flex;
+  gap: 28px;
+  z-index: 80;
+}
+.panneau-legende[hidden] { display: none; }
+
+.panneau-legende__groupe { display: flex; flex-direction: column; gap: 8px; min-width: 140px; }
+.panneau-legende__groupe h3 {
+  margin: 0 0 4px;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+.ligne-legende {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pastille-legende {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px var(--ligne);
+}
+.legende-vide { font-size: 0.8rem; color: var(--ink-soft); font-style: italic; margin: 0; }
+
+@media (max-width: 900px) {
+  .panneau-legende { right: 16px; left: 16px; flex-wrap: wrap; }
+}
+
+/* ---------- Page Administration ---------- */
+
+.plateau-admin {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section-admin {
+  background: var(--carton);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 20px 22px;
+}
+.section-admin__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-admin h2 { margin: 0; font-size: 1.05rem; }
+.section-admin p { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5; }
+
+.tableau-referentiel { display: flex; flex-direction: column; gap: 8px; }
+.ligne-referentiel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--bg);
+}
+.ligne-referentiel__libelle { font-weight: 700; flex: 1; }
+.ligne-referentiel__detail { font-size: 0.78rem; color: var(--ink-soft); }
+.ligne-referentiel__actions { display: flex; gap: 4px; }
+
+.section-admin--danger {
+  border: 2px dashed #f3b6a4;
+  background: #fff7f4;
+}
+.section-admin--danger h2 { color: #b3401f; }
+.bouton-danger {
+  background: #d64545;
+}
+.bouton-danger:hover { background: #b3401f; }

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+data/app.db
+data/imports/*
+!data/imports/.gitkeep
+build/
+dist/
+*.spec
+.vscode/
+.DS_Store

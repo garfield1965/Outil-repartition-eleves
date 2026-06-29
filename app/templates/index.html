@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Répartition des élèves</title>
+  <link rel="stylesheet" href="/static/css/theme.css?v={{ asset_version }}">
+</head>
+<body>
+
+  <header class="entete">
+    <div>
+      <h1><span class="craie">✏️</span> Répartition des élèves</h1>
+      <div class="sous-titre">
+        Glissez chaque élève vers sa future classe · Ctrl/Cmd + clic pour en sélectionner plusieurs ·
+        clic simple sur un élève pour éditer ses propriétés · glissez l'en-tête d'une classe pour la repositionner
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="bouton secondaire" id="bouton-legende">🎨 Légende</button>
+      <button class="bouton secondaire" id="bouton-toggle-import">
+        Importer un fichier ONDE
+      </button>
+      <a class="bouton secondaire" href="/admin" style="text-decoration:none; display:inline-flex; align-items:center;">⚙️ Administration</a>
+      <button class="bouton" onclick="location.reload()">Actualiser</button>
+    </div>
+  </header>
+
+  <div id="panneau-legende" class="panneau-legende" hidden>
+    <div class="panneau-legende__groupe">
+      <h3>Niveaux</h3>
+      {% for n in niveaux %}
+        <div class="ligne-legende">
+          <span class="pastille-legende" style="background:{{ n.couleur }}"></span>
+          {{ n.libelle }}
+        </div>
+      {% endfor %}
+      {% if not niveaux %}
+        <p class="legende-vide">Aucun niveau pour le moment</p>
+      {% endif %}
+    </div>
+    <div class="panneau-legende__groupe">
+      <h3>Propriétés</h3>
+      {% for p in proprietes %}
+        <div class="ligne-legende">
+          <span class="pastille-legende" style="background:{{ p.couleur }}"></span>
+          {{ p.libelle }}
+        </div>
+      {% endfor %}
+      {% if not proprietes %}
+        <p class="legende-vide">Aucune propriété pour le moment</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <section id="zone-import" class="bandeau-import" style="margin-top:18px;" hidden>
+    <span style="font-size:1.4rem;">📥</span>
+    <form id="form-import" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex:1;">
+      <span>Importer dans
+        <select name="classe_id" id="select-classe-import">
+          {% for d in donnees_origine %}
+            <option value="{{ d.classe.id }}">{{ d.classe.nom }}</option>
+          {% endfor %}
+        </select> :
+      </span>
+      <input type="file" name="fichier" accept=".xlsx,.xls" required>
+      <button type="submit" class="bouton secondaire">Importer</button>
+      <span id="rapport-import" style="font-weight:700; font-size:0.8rem;"></span>
+    </form>
+    <button type="button" class="icone-action" id="bouton-fermer-import" title="Masquer la zone d'import">✕</button>
+  </section>
+
+  <main class="plateau">
+    <div class="bloc-colonne">
+      <div class="colonne-titre-ligne">
+        <p class="colonne-titre">Classes actuelles (année en cours)</p>
+        <button class="bouton secondaire bouton-petit" id="bouton-creer-classe-origine">+ Nouvelle classe</button>
+      </div>
+      <div class="colonne-canvas" id="canvas-origine" data-zone="origine">
+        {% with donnees=donnees_origine %}{% include "partials/canvas.html" %}{% endwith %}
+      </div>
+    </div>
+
+    <div class="frontiere">
+      <span class="fleche">➜</span>
+    </div>
+
+    <div class="bloc-colonne">
+      <div class="colonne-titre-ligne">
+        <p class="colonne-titre">Futures classes (année prochaine)</p>
+        <button class="bouton secondaire bouton-petit" id="bouton-creer-classe-cible">+ Nouvelle classe</button>
+      </div>
+      <div class="colonne-canvas" id="canvas-cible" data-zone="cible">
+        {% with donnees=donnees_cible %}{% include "partials/canvas.html" %}{% endwith %}
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  {# ---------- Modale de création / modification d'une classe N+1 ---------- #}
+  <div id="modale-classe" class="modale-fond" hidden>
+    <form id="form-classe" class="modale-carte">
+      <h2 id="modale-classe-titre">Nouvelle classe</h2>
+      <input type="hidden" name="classe_id" id="champ-classe-id">
+      <input type="hidden" name="cible" id="champ-cible" value="true">
+
+      <label class="champ">
+        Nom de la classe
+        <input type="text" name="nom" id="champ-nom" required placeholder="ex: CM1 A">
+      </label>
+
+      <label class="champ">
+        Effectif cible (optionnel)
+        <input type="number" name="effectif_cible" id="champ-effectif" min="1" placeholder="ex: 24">
+      </label>
+
+      <fieldset class="champ">
+        <legend>Niveaux de la classe</legend>
+        <div id="liste-niveaux" class="liste-niveaux">
+          {% for n in niveaux %}
+            <label class="case-niveau">
+              <input type="checkbox" name="niveau_ids" value="{{ n.id }}">
+              <span style="background:{{ n.couleur }}"></span> {{ n.libelle }}
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset class="champ">
+        <legend>Couleur de la carte</legend>
+        <div id="liste-couleurs" class="liste-couleurs">
+          {% for c in ["#A2D2FF","#B9FBC0","#FFD27D","#FF8C6B","#B79CED","#F49AC2"] %}
+            <button type="button" class="pastille-couleur" data-couleur="{{ c }}" style="background:{{ c }}"></button>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="couleur" id="champ-couleur" value="#A2D2FF">
+      </fieldset>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-classe">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  {# ---------- Modale d'édition des propriétés d'un élève ---------- #}
+  <div id="modale-eleve" class="modale-fond" hidden>
+    <form id="form-eleve" class="modale-carte">
+      <h2 id="modale-eleve-titre">Élève</h2>
+      <p id="modale-eleve-sous-titre" class="legende-vide" style="margin:-8px 0 0;"></p>
+      <input type="hidden" id="champ-eleve-id">
+
+      <fieldset class="champ">
+        <legend>Propriétés</legend>
+        <div id="liste-proprietes-eleve" class="liste-niveaux">
+          {% for p in proprietes %}
+            <label class="case-niveau">
+              <input type="checkbox" name="propriete_ids" value="{{ p.id }}">
+              <span style="background:{{ p.couleur }}"></span> {{ p.libelle }}
+            </label>
+          {% endfor %}
+          {% if not proprietes %}
+            <p class="legende-vide">Aucune propriété définie pour le moment</p>
+          {% endif %}
+        </div>
+      </fieldset>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-eleve">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="/static/js/app.js?v={{ asset_version }}"></script>
+</body>
+</html>

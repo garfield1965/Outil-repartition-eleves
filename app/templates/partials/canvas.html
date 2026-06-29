@@ -1,0 +1,12 @@
+{# Liste de cartes de classe positionnées librement sur le tableau.
+   Réutilisé par index.html (chargement initial) et par la route
+   /fragments/canvas-cible (rafraîchissement après création/modif/suppression). #}
+{% for d in donnees %}
+  <div class="carte-wrapper"
+       data-wrapper-classe="{{ d.classe.id }}"
+       style="left: {{ d.classe.position_x }}px; top: {{ d.classe.position_y }}px;">
+    {% with classe=d.classe, eleves=d.eleves, stats=d.stats, origine=d.origine %}
+      {% include "partials/classe_card.html" %}
+    {% endwith %}
+  </div>
+{% endfor %}

@@ -1,0 +1,78 @@
+{# Carte d'une classe (origine N ou cible N+1). Réutilisée par index.html au
+   chargement et par routes_classes.fragment_classe après chaque drop. #}
+<div class="carte-classe {{ 'carte-classe--repliee' if classe.repliee else '' }}"
+     id="carte-classe-{{ classe.id }}"
+     data-classe-id="{{ classe.id }}"
+     style="--accent: {{ classe.couleur }}; --inclinaison: {{ '-1deg' if classe.id % 2 == 0 else '1deg' }}">
+
+  <div class="carte-classe__entete carte-classe__poignee" data-classe-id="{{ classe.id }}">
+    <span class="carte-classe__nom">{{ classe.nom }}</span>
+
+    <div class="carte-classe__actions">
+      {% set effectif_classe = "complet" if stats.effectif_cible and stats.effectif_total == stats.effectif_cible
+                           else "depasse" if stats.effectif_cible and stats.effectif_total > stats.effectif_cible
+                           else "" %}
+      {% if stats.alertes %}
+        <span class="badge-alerte" title="{{ stats.alertes|map(attribute='message')|join(' · ') }}">
+          ⚠️ {{ stats.alertes|length }}
+        </span>
+      {% endif %}
+      <span class="carte-classe__effectif {{ effectif_classe }}">
+        {{ stats.effectif_total }}{% if stats.effectif_cible %} / {{ stats.effectif_cible }}{% endif %}
+      </span>
+
+      <button class="icone-action bouton-modifier-classe" title="Modifier la classe"
+              data-classe-id="{{ classe.id }}" data-nom="{{ classe.nom }}"
+              data-effectif-cible="{{ classe.effectif_cible or '' }}"
+              data-couleur="{{ classe.couleur }}"
+              data-cible="{{ 'false' if origine else 'true' }}"
+              data-niveau-ids="{{ classe.niveaux|map(attribute='id')|join(',') }}">✎</button>
+      <button class="icone-action bouton-supprimer-classe" title="Supprimer la classe"
+              data-classe-id="{{ classe.id }}" data-nom="{{ classe.nom }}">🗑</button>
+
+      <button class="icone-action bouton-repli" title="Réduire / déplier"
+              data-classe-id="{{ classe.id }}">
+        {{ "▸" if classe.repliee else "▾" }}
+      </button>
+    </div>
+  </div>
+
+  <div class="carte-classe__corps">
+    {% if stats.alertes %}
+      <div class="carte-classe__alertes">
+        {% for alerte in stats.alertes %}
+          <span class="alerte-regle">⚠️ {{ alerte.libelle }} — {{ alerte.message }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="carte-classe__stats">
+      {% for ligne in stats.par_niveau_sexe %}
+        <span class="stat-pastille" style="--niveau-couleur: {{ ligne.couleur }}">
+          {{ ligne.niveau }} : <b>{{ ligne.total }}</b> ({{ ligne.filles }} F / {{ ligne.garcons }} G)
+        </span>
+      {% endfor %}
+      {% if not stats.par_niveau_sexe %}
+        <span class="stat-pastille">Aucun élève pour le moment</span>
+      {% endif %}
+    </div>
+
+    {% if stats.par_propriete %}
+      <div class="carte-classe__stats carte-classe__stats--proprietes">
+        {% for ligne in stats.par_propriete %}
+          <span class="stat-pastille stat-pastille--propriete" style="--niveau-couleur: {{ ligne.couleur }}">
+            {{ ligne.propriete }} : <b>{{ ligne.total }}</b>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="zone-depot"
+         data-classe-id="{{ classe.id }}"
+         data-origine="{{ 'true' if origine else 'false' }}">
+      {% for eleve in eleves %}
+        {% include "partials/eleve_icon.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</div>

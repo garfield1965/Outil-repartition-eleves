@@ -1,0 +1,22 @@
+{# Icône d'un élève : avatar rond (fond = couleur du niveau) + nom/prénom +
+   badges de propriétés. data-eleve-id est utilisé par SortableJS/app.js
+   pour savoir quel élève a été déplacé ou sélectionné. #}
+<div class="eleve eleve--{{ 'fille' if eleve.sexe == 'F' else 'garcon' }}"
+     data-eleve-id="{{ eleve.id }}"
+     style="--niveau-couleur: {{ eleve.niveau.couleur if eleve.niveau else '#A2D2FF' }}"
+     title="{{ eleve.prenom }} {{ eleve.nom }} — {{ eleve.niveau.libelle if eleve.niveau else '' }}{% if eleve.proprietes %} — {{ eleve.proprietes|map(attribute='libelle')|join(', ') }}{% endif %}">
+  <div class="eleve__avatar">
+    {{ "👧" if eleve.sexe == "F" else "👦" }}
+    {% if eleve.proprietes %}
+      <div class="eleve__badges">
+        {% for p in eleve.proprietes %}
+          <span class="badge-propriete" style="background:{{ p.couleur }}">●</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <span class="eleve__nom">
+    {{ eleve.prenom }}
+    <span class="eleve__prenom">{{ eleve.nom }}</span>
+  </span>
+</div>
