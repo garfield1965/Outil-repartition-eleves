@@ -593,23 +593,107 @@ body {
   padding: 28px 24px 80px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
 }
 
 .section-admin {
   background: var(--carton);
   border-radius: var(--rayon);
   box-shadow: var(--ombre);
-  padding: 20px 22px;
+  overflow: hidden;
 }
+.section-admin p { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5; }
+
+/* ---------- Accordéon ---------- */
+
+.accordeon__entete {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  transition: background 0.15s ease;
+}
+.accordeon__entete:hover { background: var(--bg); }
+
+.accordeon__titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.accordeon__icone {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  transition: transform 0.2s ease;
+  display: inline-block;
+  width: 16px;
+}
+
+.accordeon__compteur {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bg);
+  border: 1px solid var(--ligne);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* Le corps de l'accordéon s'anime entre masqué et visible grâce à la
+   technique max-height : on ne peut pas animer height:auto, mais
+   max-height s'y prête bien. La valeur "ouvert" est suffisamment grande
+   pour tous les contenus prévisibles. */
+.accordeon__corps {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s ease, padding 0.28s ease;
+  padding: 0 18px;
+}
+.accordeon__corps.ouvert {
+  max-height: 2000px;
+  padding: 0 18px 18px;
+}
+/* .champ[hidden] est déjà défini plus haut ; on ajoute ici le cas .accordeon__corps[hidden]
+   qui doit aussi être masqué SANS animation lors du chargement initial. */
+.accordeon__corps[hidden] {
+  display: block !important; /* laisse l'animation prendre le dessus */
+  max-height: 0;
+  padding: 0 18px;
+}
+
+.accordeon__description {
+  margin: 0 0 12px;
+  padding-top: 4px;
+}
+
+/* ---------- Section Réinitialisation (pas d'accordéon) ---------- */
+
 .section-admin__entete {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  padding: 16px 18px 0;
 }
 .section-admin h2 { margin: 0; font-size: 1.05rem; }
-.section-admin p { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5; }
+.section-admin > p { padding: 10px 18px; margin: 0; }
+.section-admin > .bouton-danger { margin: 0 18px 18px; }
+
+.section-admin--danger {
+  border: 2px dashed #f3b6a4;
+  background: #fff7f4;
+}
+.section-admin--danger h2 { color: #b3401f; }
+.bouton-danger { background: #d64545; }
+.bouton-danger:hover { background: #b3401f; }
 
 .tableau-referentiel { display: flex; flex-direction: column; gap: 8px; }
 .ligne-referentiel {
@@ -623,13 +707,3 @@ body {
 .ligne-referentiel__libelle { font-weight: 700; flex: 1; }
 .ligne-referentiel__detail { font-size: 0.78rem; color: var(--ink-soft); }
 .ligne-referentiel__actions { display: flex; gap: 4px; }
-
-.section-admin--danger {
-  border: 2px dashed #f3b6a4;
-  background: #fff7f4;
-}
-.section-admin--danger h2 { color: #b3401f; }
-.bouton-danger {
-  background: #d64545;
-}
-.bouton-danger:hover { background: #b3401f; }

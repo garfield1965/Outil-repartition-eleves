@@ -11,7 +11,7 @@
   <header class="entete">
     <div>
       <h1><span class="craie">⚙️</span> Administration</h1>
-      <div class="sous-titre">Référentiel des niveaux et propriétés, réinitialisation des données</div>
+      <div class="sous-titre">Référentiel des niveaux, propriétés et règles · cliquez un titre pour ouvrir/fermer</div>
     </div>
     <div style="display:flex; gap:10px;">
       <a class="bouton secondaire" href="/" style="text-decoration:none; display:inline-flex; align-items:center;">← Retour au tableau</a>
@@ -20,96 +20,121 @@
 
   <main class="plateau-admin">
 
-    <section class="section-admin">
-      <div class="section-admin__entete">
-        <h2>Niveaux</h2>
-        <button class="bouton secondaire bouton-petit" id="bouton-creer-niveau">+ Ajouter un niveau</button>
-      </div>
-      <div class="tableau-referentiel" id="tableau-niveaux">
-        {% for n in niveaux %}
-          <div class="ligne-referentiel" data-id="{{ n.id }}">
-            <span class="pastille-legende" style="background:{{ n.couleur }}"></span>
-            <span class="ligne-referentiel__libelle">{{ n.libelle }}</span>
-            <span class="ligne-referentiel__detail">ordre {{ n.ordre }}</span>
-            <span class="ligne-referentiel__actions">
-              <button class="icone-action bouton-modifier-niveau" title="Modifier"
-                      data-id="{{ n.id }}" data-libelle="{{ n.libelle }}"
-                      data-couleur="{{ n.couleur }}" data-ordre="{{ n.ordre }}">✎</button>
-              <button class="icone-action bouton-supprimer-niveau" title="Supprimer"
-                      data-id="{{ n.id }}" data-libelle="{{ n.libelle }}">🗑</button>
-            </span>
-          </div>
-        {% endfor %}
-        {% if not niveaux %}
-          <p class="legende-vide">Aucun niveau pour le moment</p>
-        {% endif %}
-      </div>
-    </section>
-
-    <section class="section-admin">
-      <div class="section-admin__entete">
-        <h2>Propriétés</h2>
-        <button class="bouton secondaire bouton-petit" id="bouton-creer-propriete">+ Ajouter une propriété</button>
-      </div>
-      <div class="tableau-referentiel" id="tableau-proprietes">
-        {% for p in proprietes %}
-          <div class="ligne-referentiel" data-id="{{ p.id }}">
-            <span class="pastille-legende" style="background:{{ p.couleur }}"></span>
-            <span class="ligne-referentiel__libelle">{{ p.libelle }}</span>
-            <span class="ligne-referentiel__actions">
-              <button class="icone-action bouton-modifier-propriete" title="Modifier"
-                      data-id="{{ p.id }}" data-libelle="{{ p.libelle }}" data-couleur="{{ p.couleur }}">✎</button>
-              <button class="icone-action bouton-supprimer-propriete" title="Supprimer"
-                      data-id="{{ p.id }}" data-libelle="{{ p.libelle }}">🗑</button>
-            </span>
-          </div>
-        {% endfor %}
-        {% if not proprietes %}
-          <p class="legende-vide">Aucune propriété pour le moment</p>
-        {% endif %}
+    {# ---------- Accordéon Niveaux ---------- #}
+    <section class="section-admin accordeon" data-accordeon="niveaux">
+      <button type="button" class="accordeon__entete" aria-expanded="true" aria-controls="corps-niveaux">
+        <span class="accordeon__titre">
+          <span class="accordeon__icone">▾</span>
+          Niveaux
+          <span class="accordeon__compteur">{{ niveaux|length }}</span>
+        </span>
+        <button type="button" class="bouton secondaire bouton-petit accordeon__action" id="bouton-creer-niveau"
+                onclick="event.stopPropagation()">+ Ajouter</button>
+      </button>
+      <div class="accordeon__corps" id="corps-niveaux">
+        <div class="tableau-referentiel">
+          {% for n in niveaux %}
+            <div class="ligne-referentiel" data-id="{{ n.id }}">
+              <span class="pastille-legende" style="background:{{ n.couleur }}"></span>
+              <span class="ligne-referentiel__libelle">{{ n.libelle }}</span>
+              <span class="ligne-referentiel__detail">ordre {{ n.ordre }}</span>
+              <span class="ligne-referentiel__actions">
+                <button class="icone-action bouton-modifier-niveau" title="Modifier"
+                        data-id="{{ n.id }}" data-libelle="{{ n.libelle }}"
+                        data-couleur="{{ n.couleur }}" data-ordre="{{ n.ordre }}">✎</button>
+                <button class="icone-action bouton-supprimer-niveau" title="Supprimer"
+                        data-id="{{ n.id }}" data-libelle="{{ n.libelle }}">🗑</button>
+              </span>
+            </div>
+          {% endfor %}
+          {% if not niveaux %}
+            <p class="legende-vide">Aucun niveau pour le moment</p>
+          {% endif %}
+        </div>
       </div>
     </section>
 
-    <section class="section-admin">
-      <div class="section-admin__entete">
-        <h2>Règles de gestion</h2>
-        <button class="bouton secondaire bouton-petit" id="bouton-creer-regle">+ Ajouter une règle</button>
-      </div>
-      <p style="margin-top:-6px; margin-bottom:14px;">
-        Définissez des contraintes (effectif maximum, nombre maximum d'élèves
-        porteurs d'une propriété, équilibre filles/garçons...) : une alerte
-        ⚠️ apparaît automatiquement sur les classes qui les dépassent.
-      </p>
-      <div class="tableau-referentiel" id="tableau-regles">
-        {% for r in regles %}
-          <div class="ligne-referentiel" data-id="{{ r.id }}">
-            <span class="pastille-legende" style="background:{{ '#cccccc' if not r.actif else '#FF8C6B' }}"></span>
-            <span class="ligne-referentiel__libelle">
-              {{ r.libelle }}
-              {% if not r.actif %}<span class="legende-vide"> (inactive)</span>{% endif %}
-            </span>
-            <span class="ligne-referentiel__detail">
-              {{ types_regle[r.type_regle] }}
-              {% if r.type_regle == "propriete_max" and r.propriete %} — {{ r.propriete.libelle }}{% endif %}
-              · seuil {{ r.seuil }}{{ "%" if r.type_regle == "ecart_sexe_max" else "" }}
-            </span>
-            <span class="ligne-referentiel__actions">
-              <button class="icone-action bouton-modifier-regle" title="Modifier"
-                      data-id="{{ r.id }}" data-libelle="{{ r.libelle }}"
-                      data-type-regle="{{ r.type_regle }}" data-seuil="{{ r.seuil }}"
-                      data-propriete-id="{{ r.propriete_id or '' }}"
-                      data-actif="{{ 'true' if r.actif else 'false' }}">✎</button>
-              <button class="icone-action bouton-supprimer-regle" title="Supprimer"
-                      data-id="{{ r.id }}" data-libelle="{{ r.libelle }}">🗑</button>
-            </span>
-          </div>
-        {% endfor %}
-        {% if not regles %}
-          <p class="legende-vide">Aucune règle de gestion pour le moment</p>
-        {% endif %}
+    {# ---------- Accordéon Propriétés ---------- #}
+    <section class="section-admin accordeon" data-accordeon="proprietes">
+      <button type="button" class="accordeon__entete" aria-expanded="false" aria-controls="corps-proprietes">
+        <span class="accordeon__titre">
+          <span class="accordeon__icone">▸</span>
+          Propriétés
+          <span class="accordeon__compteur">{{ proprietes|length }}</span>
+        </span>
+        <button type="button" class="bouton secondaire bouton-petit accordeon__action" id="bouton-creer-propriete"
+                onclick="event.stopPropagation()">+ Ajouter</button>
+      </button>
+      <div class="accordeon__corps" id="corps-proprietes" hidden>
+        <div class="tableau-referentiel">
+          {% for p in proprietes %}
+            <div class="ligne-referentiel" data-id="{{ p.id }}">
+              <span class="pastille-legende" style="background:{{ p.couleur }}"></span>
+              <span class="ligne-referentiel__libelle">{{ p.libelle }}</span>
+              <span class="ligne-referentiel__actions">
+                <button class="icone-action bouton-modifier-propriete" title="Modifier"
+                        data-id="{{ p.id }}" data-libelle="{{ p.libelle }}" data-couleur="{{ p.couleur }}">✎</button>
+                <button class="icone-action bouton-supprimer-propriete" title="Supprimer"
+                        data-id="{{ p.id }}" data-libelle="{{ p.libelle }}">🗑</button>
+              </span>
+            </div>
+          {% endfor %}
+          {% if not proprietes %}
+            <p class="legende-vide">Aucune propriété pour le moment</p>
+          {% endif %}
+        </div>
       </div>
     </section>
 
+    {# ---------- Accordéon Règles de gestion ---------- #}
+    <section class="section-admin accordeon" data-accordeon="regles">
+      <button type="button" class="accordeon__entete" aria-expanded="false" aria-controls="corps-regles">
+        <span class="accordeon__titre">
+          <span class="accordeon__icone">▸</span>
+          Règles de gestion
+          <span class="accordeon__compteur">{{ regles|length }}</span>
+        </span>
+        <button type="button" class="bouton secondaire bouton-petit accordeon__action" id="bouton-creer-regle"
+                onclick="event.stopPropagation()">+ Ajouter</button>
+      </button>
+      <div class="accordeon__corps" id="corps-regles" hidden>
+        <p class="accordeon__description">
+          Définissez des contraintes (effectif maximum, nombre maximum d'élèves
+          porteurs d'une propriété, équilibre filles/garçons...) : une alerte
+          ⚠️ apparaît automatiquement sur les classes qui les dépassent.
+        </p>
+        <div class="tableau-referentiel">
+          {% for r in regles %}
+            <div class="ligne-referentiel" data-id="{{ r.id }}">
+              <span class="pastille-legende" style="background:{{ '#cccccc' if not r.actif else '#FF8C6B' }}"></span>
+              <span class="ligne-referentiel__libelle">
+                {{ r.libelle }}
+                {% if not r.actif %}<span class="legende-vide"> (inactive)</span>{% endif %}
+              </span>
+              <span class="ligne-referentiel__detail">
+                {{ types_regle[r.type_regle] }}
+                {% if r.type_regle == "propriete_max" and r.propriete %} — {{ r.propriete.libelle }}{% endif %}
+                · seuil {{ r.seuil }}{{ "%" if r.type_regle == "ecart_sexe_max" else "" }}
+              </span>
+              <span class="ligne-referentiel__actions">
+                <button class="icone-action bouton-modifier-regle" title="Modifier"
+                        data-id="{{ r.id }}" data-libelle="{{ r.libelle }}"
+                        data-type-regle="{{ r.type_regle }}" data-seuil="{{ r.seuil }}"
+                        data-propriete-id="{{ r.propriete_id or '' }}"
+                        data-actif="{{ 'true' if r.actif else 'false' }}">✎</button>
+                <button class="icone-action bouton-supprimer-regle" title="Supprimer"
+                        data-id="{{ r.id }}" data-libelle="{{ r.libelle }}">🗑</button>
+              </span>
+            </div>
+          {% endfor %}
+          {% if not regles %}
+            <p class="legende-vide">Aucune règle de gestion pour le moment</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    {# ---------- Réinitialisation (pas d'accordéon : zone danger toujours visible) ---------- #}
     <section class="section-admin section-admin--danger">
       <div class="section-admin__entete">
         <h2>Réinitialisation</h2>
@@ -130,17 +155,14 @@
     <form id="form-niveau" class="modale-carte">
       <h2 id="modale-niveau-titre">Nouveau niveau</h2>
       <input type="hidden" id="champ-niveau-id">
-
       <label class="champ">
         Libellé
         <input type="text" id="champ-niveau-libelle" required placeholder="ex: CE2">
       </label>
-
       <label class="champ">
         Ordre d'affichage
         <input type="number" id="champ-niveau-ordre" value="0" min="0" step="1">
       </label>
-
       <fieldset class="champ">
         <legend>Couleur</legend>
         <div class="ligne-couleur-libre">
@@ -156,7 +178,6 @@
         </div>
         <input type="hidden" id="champ-niveau-couleur" value="#FF8C6B">
       </fieldset>
-
       <div class="modale-actions">
         <button type="button" class="bouton secondaire" id="bouton-annuler-niveau">Annuler</button>
         <button type="submit" class="bouton">Enregistrer</button>
@@ -169,12 +190,10 @@
     <form id="form-propriete" class="modale-carte">
       <h2 id="modale-propriete-titre">Nouvelle propriété</h2>
       <input type="hidden" id="champ-propriete-id">
-
       <label class="champ">
         Libellé
         <input type="text" id="champ-propriete-libelle" required placeholder="ex: ULIS">
       </label>
-
       <fieldset class="champ">
         <legend>Couleur</legend>
         <div class="ligne-couleur-libre">
@@ -190,7 +209,6 @@
         </div>
         <input type="hidden" id="champ-propriete-couleur" value="#FF8C6B">
       </fieldset>
-
       <div class="modale-actions">
         <button type="button" class="bouton secondaire" id="bouton-annuler-propriete">Annuler</button>
         <button type="submit" class="bouton">Enregistrer</button>
@@ -203,12 +221,10 @@
     <form id="form-regle" class="modale-carte">
       <h2 id="modale-regle-titre">Nouvelle règle</h2>
       <input type="hidden" id="champ-regle-id">
-
       <label class="champ">
         Libellé
         <input type="text" id="champ-regle-libelle" required placeholder="ex: Effectif maximum">
       </label>
-
       <label class="champ">
         Type de règle
         <select id="champ-regle-type">
@@ -217,7 +233,6 @@
           {% endfor %}
         </select>
       </label>
-
       <label class="champ" id="champ-regle-propriete-wrapper">
         Propriété concernée
         <select id="champ-regle-propriete">
@@ -226,17 +241,14 @@
           {% endfor %}
         </select>
       </label>
-
       <label class="champ">
         <span id="champ-regle-seuil-libelle">Seuil maximum (effectif)</span>
         <input type="number" id="champ-regle-seuil" min="0" step="1" required>
       </label>
-
       <label class="case-niveau" style="align-self:flex-start;">
         <input type="checkbox" id="champ-regle-actif" checked>
         Règle active
       </label>
-
       <div class="modale-actions">
         <button type="button" class="bouton secondaire" id="bouton-annuler-regle">Annuler</button>
         <button type="submit" class="bouton">Enregistrer</button>

@@ -1,8 +1,87 @@
 /*
-  Logique de la page d'administration : CRUD niveaux / propriétés et
-  réinitialisation des données. Page indépendante du tableau principal
-  (app.js) : pas de drag&drop ici, donc pas besoin de SortableJS.
+  Logique de la page d'administration : accordéons, CRUD niveaux /
+  propriétés / règles, et réinitialisation des données.
 */
+
+// ---------- Accordéons (état mémorisé dans localStorage) ----------
+
+const CLE_ACCORDEON = "admin_accordeons";
+
+function lireEtatsAccordeons() {
+  try { return JSON.parse(localStorage.getItem(CLE_ACCORDEON) || "{}"); }
+  catch { return {}; }
+}
+
+function sauvegarderEtatAccordeon(id, ouvert) {
+  const etats = lireEtatsAccordeons();
+  etats[id] = ouvert;
+  try { localStorage.setItem(CLE_ACCORDEON, JSON.stringify(etats)); }
+  catch { /* localStorage indisponible : pas critique */ }
+}
+
+function ouvrirAccordeon(corps, entete) {
+  // On retire d'abord l'attribut hidden (posé par le serveur pour l'état
+  // initial) pour laisser l'animation CSS max-height prendre le dessus.
+  corps.removeAttribute("hidden");
+  requestAnimationFrame(() => corps.classList.add("ouvert"));
+  entete.setAttribute("aria-expanded", "true");
+  const icone = entete.querySelector(".accordeon__icone");
+  if (icone) icone.textContent = "▾";
+}
+
+function fermerAccordeon(corps, entete) {
+  corps.classList.remove("ouvert");
+  entete.setAttribute("aria-expanded", "false");
+  const icone = entete.querySelector(".accordeon__icone");
+  if (icone) icone.textContent = "▸";
+}
+
+function basculerAccordeon(section) {
+  const id = section.dataset.accordeon;
+  const entete = section.querySelector(".accordeon__entete");
+  const corps = section.querySelector(".accordeon__corps");
+  const estOuvert = entete.getAttribute("aria-expanded") === "true";
+
+  if (estOuvert) {
+    fermerAccordeon(corps, entete);
+  } else {
+    ouvrirAccordeon(corps, entete);
+  }
+  sauvegarderEtatAccordeon(id, !estOuvert);
+}
+
+function initialiserAccordeons() {
+  const etats = lireEtatsAccordeons();
+
+  document.querySelectorAll(".accordeon").forEach((section) => {
+    const id = section.dataset.accordeon;
+    const entete = section.querySelector(".accordeon__entete");
+    const corps = section.querySelector(".accordeon__corps");
+
+    // L'état localStorage est prioritaire sur l'attribut HTML initial
+    // (aria-expanded dans le template), pour que la page retrouve
+    // la disposition que l'enseignant avait laissée.
+    if (id in etats) {
+      if (etats[id]) {
+        ouvrirAccordeon(corps, entete);
+      } else {
+        fermerAccordeon(corps, entete);
+        // Corps part avec max-height:0, pas besoin d'animation au chargement
+      }
+    } else {
+      // Pas encore de préférence sauvegardée : on respecte l'état HTML
+      if (entete.getAttribute("aria-expanded") === "true") {
+        ouvrirAccordeon(corps, entete);
+      }
+    }
+
+    // Clic sur l'en-tête (pas sur les boutons d'action à l'intérieur)
+    entete.addEventListener("click", (evt) => {
+      if (evt.target.closest(".accordeon__action")) return;
+      basculerAccordeon(section);
+    });
+  });
+}
 
 function afficherToast(message) {
   const toast = document.getElementById("toast");
@@ -310,3 +389,6 @@ document.getElementById("bouton-reinitialiser").addEventListener("click", async 
     setTimeout(() => { window.location.href = "/"; }, 1800);
   } catch (e) { /* déjà notifié */ }
 });
+
+// Initialisation au chargement
+initialiserAccordeons();

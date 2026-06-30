@@ -15,7 +15,7 @@ python -m app.main
 ```
 Le navigateur s'ouvre automatiquement sur `http://127.0.0.1:8421`.
 Au premier lancement, une base SQLite est créée dans `data/app.db` avec un
-jeu de données de démonstration (une classe de CE2 à répartir vers deux CM1).
+jeu de données de démonstration (avec 2 classes de CE2 et CE1/CE2  à répartir vers 2 classes CM1 et CM1/CM2).
 
 ## Fonctionnement
 
