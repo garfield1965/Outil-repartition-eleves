@@ -6,6 +6,6 @@ data/imports/*
 !data/imports/.gitkeep
 build/
 dist/
-*.spec
+*.spec.bak
 .vscode/
 .DS_Store

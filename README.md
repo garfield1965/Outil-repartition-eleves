@@ -11,11 +11,18 @@ python -m venv .venv
 source .venv/bin/activate          # Windows : .venv\Scripts\activate
 pip install -r requirements.txt
 
-python -m app.main
+python main.py
 ```
+
+> ⚠️ **`main.py` doit rester à la racine du projet** (pas dans `app/`).
+> Python résout les imports depuis le répertoire courant : si `main.py` était
+> dans `app/`, l'import `from app.config import settings` chercherait un
+> sous-package `app/app/` inexistant et échouerait avec
+> *"app n'est pas un module"*.
+
 Le navigateur s'ouvre automatiquement sur `http://127.0.0.1:8421`.
 Au premier lancement, une base SQLite est créée dans `data/app.db` avec un
-jeu de données de démonstration (avec 2 classes de CE2 et CE1/CE2  à répartir vers 3 classes, 1 CE2, 1 CM1 et 1 CM1/CM2).
+jeu de données de démonstration (2 classes CE1 et Ce1/CE2 vers 3 classes 1 CM1, 1 CE2 et 1 CM1/CM2).
 
 ## Fonctionnement
 
@@ -110,14 +117,26 @@ Aucune autre partie du code n'a besoin d'être modifiée.
 ## Générer un exécutable autonome (sans Python installé sur le poste)
 
 ```bash
+# Depuis la racine du projet, venv activé
 pip install pyinstaller
 python scripts/build_exe.py
 ```
-Le résultat (`dist/repartition_eleves` ou `.exe` sous Windows) peut être
-copié sur n'importe quel poste ou clé USB : double-clic, le serveur démarre
-et le navigateur s'ouvre, sans aucune installation préalable. Le fichier
-`data/app.db` est créé à côté de l'exécutable, donc les données suivent si
-on copie le dossier entier.
+
+Le script utilise le fichier `repartition_eleves.spec` (fourni à la racine)
+plutôt que des flags CLI. Ce `.spec` définit deux points critiques absents
+des flags simples :
+
+- **`pathex=[RACINE]`** : ajoute la racine du projet à `sys.path` pendant
+  l'analyse. Sans ça, PyInstaller ne trouve pas le package local `app/` et
+  l'exécutable plante avec *"No module named app.api"*.
+- **`hiddenimports`** : liste explicitement tous les sous-modules de `app`
+  et les modules chargés dynamiquement par uvicorn / SQLAlchemy / anyio
+  (non détectés par l'analyse statique).
+
+Le résultat (`dist/repartition_eleves.exe` sous Windows, sans extension sur
+Mac/Linux) peut être copié sur n'importe quel poste ou clé USB : double-clic,
+le serveur démarre et le navigateur s'ouvre, sans aucune installation
+préalable. Le fichier `data/app.db` est créé à côté de l'exécutable.
 
 ## Limites connues / pistes d'évolution
 

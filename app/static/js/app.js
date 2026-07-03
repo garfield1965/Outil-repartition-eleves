@@ -129,7 +129,7 @@ function initialiserDeplacementCarte(wrapper) {
   let depart = null;
 
   poignee.addEventListener("pointerdown", (evt) => {
-    if (evt.target.closest("button")) return; // ne pas interférer avec les boutons d'action
+    if (evt.target.closest("button") || evt.target.closest("a")) return; // ne pas interférer avec les boutons d'action
     poignee.setPointerCapture(evt.pointerId);
     depart = {
       x: evt.clientX,

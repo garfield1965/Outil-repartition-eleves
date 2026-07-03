@@ -13,7 +13,10 @@ from app.config import settings
 from app.core.database import init_db, SessionLocal
 from app.services.seed import seed_si_vide
 
-from app.api import routes_classes, routes_eleves, routes_import, routes_stats, routes_classes_gestion, routes_admin
+from app.api import (
+    routes_classes, routes_eleves, routes_import, routes_stats,
+    routes_classes_gestion, routes_admin, routes_export,
+)
 
 
 def create_app() -> FastAPI:
@@ -31,6 +34,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_stats.router)
     app.include_router(routes_classes_gestion.router)
     app.include_router(routes_admin.router)
+    app.include_router(routes_export.router)
 
     return app
 

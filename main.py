@@ -1,13 +1,25 @@
 """
-Point d'entrée unique de l'application.
+Point d'entrée unique de l'application — à placer à la RACINE du projet.
 
-Lance le serveur web embarqué et ouvre automatiquement le navigateur,
-afin que l'enseignant n'ait qu'à double-cliquer sur l'exécutable.
+Lancement :
+    python main.py
+    # ou
+    python -m main
+
+Le serveur web embarqué démarre et le navigateur s'ouvre automatiquement.
+
+Pourquoi main.py est à la racine et non dans app/ ?
+    Python résout les imports relatifs à partir du répertoire courant.
+    Avec main.py dans app/, `import app.config` cherche un sous-package
+    `app/app/` qui n'existe pas → erreur "app n'est pas un module".
+    En restant à la racine, `app/` est bien vu comme un package du projet.
 """
+import importlib
 import threading
 import webbrowser
 
 import uvicorn
+
 
 from app.config import settings
 

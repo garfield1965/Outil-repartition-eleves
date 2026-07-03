@@ -23,7 +23,7 @@ def main():
         "--name", "repartition_eleves",
         "--add-data", f"{RACINE / 'app' / 'static'}{separateur}app/static",
         "--add-data", f"{RACINE / 'app' / 'templates'}{separateur}app/templates",
-        str(RACINE / "app" / "main.py"),
+        str(RACINE / 'main.py'),
     ]
     print("Commande exécutée :", " ".join(commande))
     subprocess.run(commande, check=True, cwd=RACINE)

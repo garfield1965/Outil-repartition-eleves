@@ -207,10 +207,14 @@ body {
   height: 26px;
   font-size: 0.8rem;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s ease;
+  /* compatibilité <a> : retire le soulignement et hérite la couleur */
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
 }
 .icone-action:hover { background: var(--ligne); }
 
