@@ -36,11 +36,14 @@ def seed_si_vide(db: Session) -> None:
     ulis = Propriete(libelle="ULIS", couleur="#FFB4A2", icone="puzzle")
     tdah = Propriete(libelle="TDAH", couleur="#A2D2FF", icone="bolt")
     tsa = Propriete(libelle="TSA", couleur="#FF6B6B", icone="brain")
+    pai = Propriete(libelle="PAI", couleur="#C2A2EE", icone="puzzle")
+    pap = Propriete(libelle="PAP", couleur="#E2D2AA", icone="puzzle")
+    ime = Propriete(libelle="IME", couleur="#F9C74F", icone="bell")
     bon_niveau = Propriete(libelle="Bon niveau", couleur="#B9FBC0", icone="star")
     en_difficulte = Propriete(libelle="En difficulté", couleur="#F54927", icone="exclamation")
     a_separer = Propriete(libelle="À séparer", couleur="#FFD6A5", icone="split")
     redoublement = Propriete(libelle="Redoublement", couleur="#FCBA03", icone="redoublement")
-    db.add_all([ulis, tdah, bon_niveau, en_difficulte, a_separer])
+    db.add_all([ulis, tdah, tsa, pai, pap, ime, bon_niveau, en_difficulte, a_separer, redoublement])
     db.flush()
 
     # Classe d'origine (année N)
@@ -80,7 +83,7 @@ def seed_si_vide(db: Session) -> None:
 
     import random
     random.seed(44)
-    proprietes_dispo = [ulis, tdah, tsa, bon_niveau, a_separer, en_difficulte, redoublement]
+    proprietes_dispo = [ulis, tdah, tsa,pai, pap, ime, bon_niveau, a_separer, en_difficulte, redoublement]
 
     for i in range(28):
         sexe = "F" if i % 2 == 0 else "M"
