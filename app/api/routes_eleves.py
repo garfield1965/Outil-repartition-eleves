@@ -1,18 +1,60 @@
-"""
-Route appelée par le JavaScript à chaque "drop" d'un élève sur une classe.
-"""
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from app.config import settings
 from app.core.database import get_db
-from app.core.models import Eleve
+from app.core.models import Eleve, HistoriqueAffectation, eleve_propriete
 from app.core.schemas import AffectationIn, AffectationGroupeIn, ProprietesEleveIn
 from app.services.repartition import affecter_eleve, affecter_plusieurs_eleves, definir_proprietes_eleve
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(settings.templates_dir))
+
+
+class DepartEleveIn(BaseModel):
+    eleve_ids: list[int]
+
+
+@router.delete("/api/eleves/quitter-ecole")
+def quitter_ecole(payload: DepartEleveIn, db: Session = Depends(get_db)):
+    """
+    Supprime définitivement les élèves dont les ids sont fournis.
+    N'est appelé QU'APRÈS confirmation explicite de l'utilisateur côté
+    interface. Retourne les classes impactées pour que le front puisse
+    les rafraîchir.
+    """
+    classes_impactees = set()
+    noms_supprimes = []
+
+    for eleve_id in payload.eleve_ids:
+        eleve = db.get(Eleve, eleve_id)
+        if eleve is None:
+            continue
+        if eleve.classe_origine_id:
+            classes_impactees.add((eleve.classe_origine_id, True))
+        if eleve.classe_destination_id:
+            classes_impactees.add((eleve.classe_destination_id, False))
+        noms_supprimes.append(f"{eleve.prenom} {eleve.nom}")
+
+        # Nettoyage des tables d'association avant suppression
+        db.execute(
+            eleve_propriete.delete().where(eleve_propriete.c.eleve_id == eleve_id)
+        )
+        db.query(HistoriqueAffectation).filter_by(eleve_id=eleve_id).delete()
+        db.delete(eleve)
+
+    db.commit()
+    return {
+        "ok": True,
+        "supprimes": noms_supprimes,
+        "classes_impactees": [
+            {"classe_id": cid, "origine": orig}
+            for cid, orig in classes_impactees
+        ],
+    }
+
 
 
 @router.get("/api/eleves/{eleve_id}")

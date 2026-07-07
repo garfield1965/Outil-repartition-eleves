@@ -22,6 +22,7 @@ MAPPING_COLONNES = {
     "sexe": ["sexe", "sexe (m/f)", "genre"],
     "date_naissance": ["date de naissance", "ne(e) le", "né(e) le", "date naissance"],
     "niveau": ["niveau", "classe niveau", "code niveau", "division"],
+    "statut": ["statut", "statut élève", "statut de l'élève"],
 }
 
 

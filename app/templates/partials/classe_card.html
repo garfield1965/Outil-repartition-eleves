@@ -29,7 +29,7 @@
               data-niveau-ids="{{ classe.niveaux|map(attribute='id')|join(',') }}">✎</button>
       <button class="icone-action bouton-supprimer-classe" title="Supprimer la classe"
               data-classe-id="{{ classe.id }}" data-nom="{{ classe.nom }}">🗑</button>
-       <a class="icone-action" title="Exporter en PDF"
+      <a class="icone-action" title="Exporter en PDF"
          href="/api/export/classe/{{ classe.id }}" target="_blank">⬇</a>
 
       <button class="icone-action bouton-repli" title="Réduire / déplier"

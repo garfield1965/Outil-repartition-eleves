@@ -129,7 +129,7 @@ function initialiserDeplacementCarte(wrapper) {
   let depart = null;
 
   poignee.addEventListener("pointerdown", (evt) => {
-    if (evt.target.closest("button") || evt.target.closest("a")) return; // ne pas interférer avec les boutons d'action
+    if (evt.target.closest("button") || evt.target.closest("a")) return; // ne pas interférer avec les boutons et liens d'action
     poignee.setPointerCapture(evt.pointerId);
     depart = {
       x: evt.clientX,
@@ -300,6 +300,76 @@ document.getElementById("bouton-creer-classe-cible").addEventListener("click", (
 document.getElementById("bouton-annuler-classe").addEventListener("click", fermerModaleClasse);
 modaleClasse.addEventListener("click", (evt) => { if (evt.target === modaleClasse) fermerModaleClasse(); });
 
+// ---------- Statistiques de l'école ----------
+
+const modaleStatsEcole = document.getElementById("modale-stats-ecole");
+const boutonStatsEcole = document.getElementById("bouton-stats-ecole");
+const boutonFermerStats = document.getElementById("bouton-fermer-stats");
+const contenuStats = document.getElementById("contenu-stats-ecole");
+
+function construireHtmlStats(data) {
+  function blocAnnee(stats, annee) {
+    if (!stats) {
+      return `<div class="stats-bloc">
+        <div class="stats-bloc__titre">${annee}</div>
+        <p class="stats-vide">Aucune donnée</p>
+      </div>`;
+    }
+
+    const lignesProprietes = stats.par_propriete
+      .filter(p => p.nombre > 0)
+      .map(p => `
+        <div class="stats-propriete-ligne">
+          <span class="pastille-legende" style="background:${p.couleur}"></span>
+          <span class="stats-propriete-ligne__libelle">${p.libelle}</span>
+          <span class="stats-propriete-ligne__nb">${p.nombre}</span>
+          <div class="stats-propriete-barre-fond">
+            <div class="stats-propriete-barre" style="width:${p.pourcentage}%; background:${p.couleur}"></div>
+          </div>
+          <span class="stats-propriete-ligne__pct">${p.pourcentage} %</span>
+        </div>`)
+      .join("");
+
+    return `<div class="stats-bloc">
+      <div class="stats-bloc__titre">${stats.libelle}</div>
+      <div class="stats-total">${stats.total} <span>élève${stats.total > 1 ? "s" : ""}</span></div>
+      <div class="stats-sexes">
+        <div class="stats-sexe-badge stats-sexe-badge--f">
+          <span class="stats-sexe-badge__nb">👧 ${stats.filles}</span>
+          <span class="stats-sexe-badge__label">${stats.pct_filles} % Filles</span>
+        </div>
+        <div class="stats-sexe-badge stats-sexe-badge--m">
+          <span class="stats-sexe-badge__nb">👦 ${stats.garcons}</span>
+          <span class="stats-sexe-badge__label">${stats.pct_garcons} % Garçons</span>
+        </div>
+      </div>
+      <div class="stats-proprietes">
+        ${lignesProprietes || '<p class="stats-vide">Aucune propriété assignée</p>'}
+      </div>
+    </div>`;
+  }
+
+  return blocAnnee(data.annee_n, "Année en cours (N)") +
+         blocAnnee(data.annee_n1, "Année prochaine (N+1)");
+}
+
+boutonStatsEcole.addEventListener("click", async (evt) => {
+  evt.stopPropagation();
+  contenuStats.innerHTML = '<p class="legende-vide">Chargement…</p>';
+  modaleStatsEcole.hidden = false;
+  try {
+    const data = await appelApi("/api/stats/ecole/global");
+    contenuStats.innerHTML = construireHtmlStats(data);
+  } catch (e) {
+    contenuStats.innerHTML = '<p class="legende-vide">Erreur lors du chargement.</p>';
+  }
+});
+
+boutonFermerStats.addEventListener("click", () => { modaleStatsEcole.hidden = true; });
+modaleStatsEcole.addEventListener("click", (evt) => {
+  if (evt.target === modaleStatsEcole) modaleStatsEcole.hidden = true;
+});
+
 // ---------- Panneau légende (couleurs niveaux / propriétés) ----------
 
 const panneauLegende = document.getElementById("panneau-legende");
@@ -455,4 +525,112 @@ function initialiserFormulaireImport() {
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".colonne-canvas").forEach(initialiserToutLeCanevas);
   initialiserFormulaireImport();
+  initialiserZoneDepart();
 });
+
+// ---------- Zone "Quitte l'école" ----------
+
+function initialiserZoneDepart() {
+  const zoneDepart = document.getElementById("zone-depart");
+  if (!zoneDepart) return;
+
+  // File d'attente des élèves déposés : remplie par le drop,
+  // vidée après confirmation ou annulation.
+  let elevesEnAttente = [];
+
+  Sortable.create(zoneDepart, {
+    group: { name: "eleves", put: true, pull: false },
+    animation: 180,
+    ghostClass: "sortable-ghost",
+    multiDrag: true,
+    selectedClass: "selectionne",
+    multiDragKey: "ctrl",
+
+    onAdd: async function (evt) {
+      const elementsDeplaces = (evt.items && evt.items.length > 0) ? evt.items : [evt.item];
+
+      // On retire immédiatement les icônes déposées de la zone de départ
+      // (visuellement elles ne doivent pas y rester — la suppression réelle
+      // n'a lieu qu'après confirmation).
+      elementsDeplaces.forEach((el) => {
+        if (el.parentNode === zoneDepart) {
+          zoneDepart.removeChild(el);
+        }
+      });
+
+      elevesEnAttente = elementsDeplaces.map((el) => ({
+        id: parseInt(el.dataset.eleveId, 10),
+        nom: el.querySelector(".eleve__nom")?.textContent?.trim() || `Élève ${el.dataset.eleveId}`,
+        sexe: el.classList.contains("eleve--fille") ? "F" : "M",
+        classeOrigineId: null, // sera récupéré depuis l'API
+      }));
+
+      ouvrirModaleDepart(elevesEnAttente);
+    },
+
+    onMove: function () {
+      zoneDepart.classList.add("survol-actif");
+    },
+  });
+
+  // Feedback visuel au survol pendant le drag (Sortable ne déclenche pas
+  // d'événement natif "dragenter" sur les zones non-SortableJS standard).
+  document.addEventListener("sortableUpdate", () => {});
+  zoneDepart.addEventListener("dragover", () => zoneDepart.classList.add("survol-actif"));
+  zoneDepart.addEventListener("dragleave", () => zoneDepart.classList.remove("survol-actif"));
+  zoneDepart.addEventListener("drop", () => zoneDepart.classList.remove("survol-actif"));
+
+  // ---------- Modale de confirmation ----------
+
+  const modaleDepart = document.getElementById("modale-depart");
+  const liste = document.getElementById("modale-depart__liste");
+  const texte = document.getElementById("modale-depart__texte");
+
+  function ouvrirModaleDepart(eleves) {
+    zoneDepart.classList.remove("survol-actif");
+    const nb = eleves.length;
+    texte.textContent = nb === 1
+      ? "L'élève suivant va être définitivement retiré de la base :"
+      : `Les ${nb} élèves suivants vont être définitivement retirés de la base :`;
+
+    liste.innerHTML = eleves.map((e) =>
+      `<li>${e.sexe === "F" ? "👧" : "👦"} ${e.nom}</li>`
+    ).join("");
+
+    modaleDepart.hidden = false;
+  }
+
+  function fermerModaleDepart() {
+    modaleDepart.hidden = true;
+    elevesEnAttente = [];
+    // Rafraîchit toutes les cartes pour remettre les icônes à leur place
+    // si l'utilisateur avait annulé (elles avaient été retirées du DOM).
+    rafraichirToutesLesCartes();
+  }
+
+  document.getElementById("bouton-annuler-depart").addEventListener("click", fermerModaleDepart);
+  modaleDepart.addEventListener("click", (evt) => {
+    if (evt.target === modaleDepart) fermerModaleDepart();
+  });
+
+  document.getElementById("bouton-confirmer-depart").addEventListener("click", async () => {
+    const ids = elevesEnAttente.map((e) => e.id);
+    try {
+      const resultat = await appelApi("/api/eleves/quitter-ecole", {
+        method: "DELETE",
+        body: JSON.stringify({ eleve_ids: ids }),
+      });
+
+      modaleDepart.hidden = true;
+      elevesEnAttente = [];
+
+      const nb = resultat.supprimes.length;
+      afficherToast(`${nb} élève${nb > 1 ? "s" : ""} retiré${nb > 1 ? "s" : ""} de l'école 🚪`);
+
+      // Rafraîchit uniquement les cartes impactées
+      for (const { classe_id, origine } of resultat.classes_impactees) {
+        await rafraichirCarte(classe_id, origine);
+      }
+    } catch (e) { /* déjà notifié par appelApi */ }
+  });
+}

@@ -429,9 +429,173 @@ body {
 }
 .toast.visible { transform: translateY(0); opacity: 1; }
 
-@media (max-width: 900px) {
-  .plateau { flex-direction: column; }
-  .frontiere { display: none; }
+/* Colonne droite étroite contenant la zone de départ */
+.colonne-laterale {
+  flex: 0 0 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 36px; /* alignement avec les en-têtes des colonnes */
+}
+
+/* ---------- Zone "Quitte l'école" ---------- */
+
+.zone-depart {
+  border: 2px dashed #f3b6a4;
+  border-radius: var(--rayon);
+  padding: 18px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #fff7f4;
+  cursor: default;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  min-height: 110px;
+}
+.zone-depart.survol-actif {
+  background: #ffe0d6;
+  border-color: #d64545;
+  transform: scale(1.02);
+}
+
+.zone-depart__icone {
+  font-size: 2.4rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.zone-depart.survol-actif .zone-depart__icone {
+  transform: scale(1.2) rotate(-10deg);
+  animation: battre-porte 0.4s ease;
+}
+@keyframes battre-porte {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: scale(1.2) rotate(-15deg); }
+  60%  { transform: scale(1.2) rotate(-5deg); }
+  100% { transform: scale(1.2) rotate(-10deg); }
+}
+
+.zone-depart__label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #b3401f;
+}
+.zone-depart__sous-label {
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- Modale statistiques de l'école ---------- */
+
+.modale-stats {
+  max-width: 640px;
+  width: 100%;
+}
+.modale-stats__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modale-stats__entete h2 { margin: 0; font-size: 1.1rem; }
+
+.modale-stats__contenu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.stats-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stats-bloc__titre {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: var(--ink-soft);
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ligne);
+}
+.stats-total {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.stats-total span { font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+
+.stats-sexes {
+  display: flex;
+  gap: 8px;
+}
+.stats-sexe-badge {
+  flex: 1;
+  border-radius: 10px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stats-sexe-badge--f { background: color-mix(in srgb, #FF8C6B 15%, white); }
+.stats-sexe-badge--m { background: color-mix(in srgb, #6FB7E8 15%, white); }
+.stats-sexe-badge__nb { font-size: 1.1rem; font-weight: 800; }
+.stats-sexe-badge__label { font-size: 0.72rem; color: var(--ink-soft); font-weight: 600; }
+
+.stats-proprietes { display: flex; flex-direction: column; gap: 6px; }
+.stats-propriete-ligne {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+}
+.stats-propriete-ligne__libelle { flex: 1; font-weight: 600; }
+.stats-propriete-ligne__nb { font-weight: 800; min-width: 24px; text-align: right; }
+.stats-propriete-ligne__pct { color: var(--ink-soft); min-width: 42px; text-align: right; font-size: 0.78rem; }
+.stats-propriete-barre-fond {
+  height: 6px;
+  background: var(--ligne);
+  border-radius: 999px;
+  overflow: hidden;
+  flex: 1;
+}
+.stats-propriete-barre {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.stats-vide { color: var(--ink-soft); font-style: italic; font-size: 0.85rem; }
+
+.modale-depart__icone {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.modale-depart__liste {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 14px;
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.modale-depart__liste li {
+  background: #fff0ea;
+  border: 1px solid #f3b6a4;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ---------- Modale création / modification de classe ---------- */
@@ -711,3 +875,8 @@ body {
 .ligne-referentiel__libelle { font-weight: 700; flex: 1; }
 .ligne-referentiel__detail { font-size: 0.78rem; color: var(--ink-soft); }
 .ligne-referentiel__actions { display: flex; gap: 4px; }
+
+@media (max-width: 900px) {
+  .plateau { flex-direction: column; }
+  .frontiere { display: none; }
+}

@@ -18,6 +18,7 @@
     </div>
     <div style="display:flex; gap:10px;">
       <button class="bouton secondaire" id="bouton-legende">🎨 Légende</button>
+      <button class="bouton secondaire" id="bouton-stats-ecole">📊 Statistiques</button>
       <button class="bouton secondaire" id="bouton-toggle-import">
         Importer un fichier ONDE
       </button>
@@ -98,9 +99,49 @@
         {% with donnees=donnees_cible %}{% include "partials/canvas.html" %}{% endwith %}
       </div>
     </div>
+
+    <div class="colonne-laterale">
+      <div class="zone-depart" id="zone-depart" title="Glissez ici les élèves qui quittent l'école">
+        <div class="zone-depart__icone">🚪</div>
+        <div class="zone-depart__label">Quitte l'école</div>
+        <div class="zone-depart__sous-label">Glissez un ou plusieurs élèves ici</div>
+      </div>
+    </div>
   </main>
 
+  {# ---------- Modale statistiques de l'école ---------- #}
+  <div id="modale-stats-ecole" class="modale-fond" hidden>
+    <div class="modale-carte modale-stats">
+      <div class="modale-stats__entete">
+        <h2>📊 Statistiques de l'école</h2>
+        <button type="button" class="icone-action" id="bouton-fermer-stats">✕</button>
+      </div>
+      <div id="contenu-stats-ecole" class="modale-stats__contenu">
+        <p class="legende-vide">Chargement…</p>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
+
+  {# ---------- Modale de confirmation de départ d'école ---------- #}
+  <div id="modale-depart" class="modale-fond" hidden>
+    <div class="modale-carte">
+      <div class="modale-depart__icone">🚪</div>
+      <h2>Quitter l'école</h2>
+      <p id="modale-depart__texte" class="legende-vide" style="text-align:center;"></p>
+      <ul id="modale-depart__liste" class="modale-depart__liste"></ul>
+      <p style="font-size:0.82rem; color:#b3401f; font-weight:700; text-align:center; margin:0;">
+        Cette action est irréversible.
+      </p>
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-depart">Annuler</button>
+        <button type="button" class="bouton bouton-danger" id="bouton-confirmer-depart">
+          Confirmer le départ
+        </button>
+      </div>
+    </div>
+  </div>
 
   {# ---------- Modale de création / modification d'une classe N+1 ---------- #}
   <div id="modale-classe" class="modale-fond" hidden>
