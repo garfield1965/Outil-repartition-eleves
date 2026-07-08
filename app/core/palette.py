@@ -16,8 +16,27 @@ PALETTE_NIVEAUX = [
     "#F4D35E",  # citron
     "#7ED6C1",  # turquoise
     "#F49AC2",  # rose
+    "#FF7D00",  # orange
+    "#00FF00",  # vert
+]
+PALETTE_PROPRIETES   = [
+    "#FFA500",  # orange
+    "#00FF00",  # vert
+    "#FF0000",  # rouge
+    "#0000FF",  # bleu
+    "#800080",  # violet
+    "#FFC0CB",  # rose
+    "#FFFF00",  # jaune
+    "#00FFFF",  # cyan
+    "#166866",  # bleu foncé
+    "#FF00FF",  # magenta
 ]
 
 
-def couleur_pour_index(index: int) -> str:
-    return PALETTE_NIVEAUX[index % len(PALETTE_NIVEAUX)]
+def couleur_pour_index(index: int, palette: list[str]= PALETTE_NIVEAUX) -> str:
+    """
+    Retourne la couleur correspondant à l'index dans la palette.
+    Si l'index dépasse la taille de la palette, les couleurs sont réutilisées
+    de manière circulaire.
+    """
+    return palette[index % len(palette)]

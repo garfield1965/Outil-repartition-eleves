@@ -58,21 +58,73 @@
     </div>
   </div>
 
-  <section id="zone-import" class="bandeau-import" style="margin-top:18px;" hidden>
-    <span style="font-size:1.4rem;">📥</span>
-    <form id="form-import" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex:1;">
-      <span>Importer dans
-        <select name="classe_id" id="select-classe-import">
-          {% for d in donnees_origine %}
-            <option value="{{ d.classe.id }}">{{ d.classe.nom }}</option>
-          {% endfor %}
-        </select> :
-      </span>
-      <input type="file" name="fichier" accept=".xlsx,.xls" required>
-      <button type="submit" class="bouton secondaire">Importer</button>
-      <span id="rapport-import" style="font-weight:700; font-size:0.8rem;"></span>
-    </form>
-    <button type="button" class="icone-action" id="bouton-fermer-import" title="Masquer la zone d'import">✕</button>
+  <section id="zone-import" class="bandeau-import-panel" style="margin-top:18px;" hidden>
+    <div class="import-panel__entete">
+      <div class="import-onglets">
+        <button type="button" class="import-onglet import-onglet--actif" data-onglet="onde">
+          📥 Importer un fichier ONDE
+        </button>
+        <button type="button" class="import-onglet" data-onglet="manuel">
+          ✏️ Ajouter un élève manuellement
+        </button>
+      </div>
+      <button type="button" class="icone-action" id="bouton-fermer-import" title="Masquer">✕</button>
+    </div>
+
+    {# --- Onglet fichier ONDE --- #}
+    <div id="onglet-onde" class="import-onglet-corps">
+      <form id="form-import" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span>Importer dans
+          <select name="classe_id" id="select-classe-import">
+            {% for d in donnees_origine %}
+              <option value="{{ d.classe.id }}">{{ d.classe.nom }}</option>
+            {% endfor %}
+          </select> :
+        </span>
+        <input type="file" name="fichier" accept=".xlsx,.xls" required>
+        <button type="submit" class="bouton secondaire">Importer</button>
+        <span id="rapport-import" style="font-weight:700; font-size:0.8rem;"></span>
+      </form>
+    </div>
+
+    {# --- Onglet ajout manuel --- #}
+    <div id="onglet-manuel" class="import-onglet-corps" hidden>
+      <form id="form-nouvel-eleve" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+        <label class="champ-import">
+          Nom
+          <input type="text" id="nouvel-eleve-nom" required placeholder="DUPONT" autocomplete="off">
+        </label>
+        <label class="champ-import">
+          Prénom
+          <input type="text" id="nouvel-eleve-prenom" required placeholder="Emma" autocomplete="off">
+        </label>
+        <label class="champ-import">
+          Sexe
+          <select id="nouvel-eleve-sexe">
+            <option value="F">👧 Fille</option>
+            <option value="M">👦 Garçon</option>
+          </select>
+        </label>
+        <label class="champ-import">
+          Niveau
+          <select id="nouvel-eleve-niveau">
+            {% for n in niveaux %}
+              <option value="{{ n.id }}">{{ n.libelle }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="champ-import">
+          Classe
+          <select id="nouvel-eleve-classe">
+            {% for d in donnees_origine %}
+              <option value="{{ d.classe.id }}">{{ d.classe.nom }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit" class="bouton secondaire">Ajouter l'élève</button>
+        <span id="rapport-nouvel-eleve" style="font-weight:700; font-size:0.8rem;"></span>
+      </form>
+    </div>
   </section>
 
   <main class="plateau">

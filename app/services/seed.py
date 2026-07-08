@@ -5,7 +5,7 @@ Permet de tester l'appli (drag&drop, stats...) sans attendre un vrai export ONDE
 from sqlalchemy.orm import Session
 
 from app.core.models import Annee, Niveau, Classe, Eleve, Propriete
-from app.core.palette import couleur_pour_index
+from app.core.palette import couleur_pour_index, PALETTE_NIVEAUX,   PALETTE_PROPRIETES
 
 PRENOMS_F = ["Emma", "Léa", "Chloé", "Manon", "Inès", "Camille", "Jade", "Louise", "Lucie", "Sarah", "Mia", "Lina", "Zoé", "Clara", "Juliette", "Ambre", "Rose", "Anaïs"]
 PRENOMS_M = ["Lucas", "Hugo", "Nathan", "Léo", "Gabriel", "Raphaël", "Tom", "Adam","Francis","Thomas","Louis","Arthur","Ethan","Noah","Paul","Maxime","Clément","Mathis","Alexandre"]
@@ -21,29 +21,30 @@ def seed_si_vide(db: Session) -> None:
     db.add_all([annee_n, annee_n1])
     db.flush()
 
-    niveau_tps = Niveau(libelle="TPS", ordre=1, couleur=couleur_pour_index(0))
-    niveau_ps = Niveau(libelle="PS", ordre=2, couleur=couleur_pour_index(1))
-    niveau_ms = Niveau(libelle="MS", ordre=3, couleur=couleur_pour_index(2))
-    niveau_gs = Niveau(libelle="GS", ordre=4, couleur=couleur_pour_index(3))
-    niveau_cp = Niveau(libelle="CP", ordre=5, couleur=couleur_pour_index(4))
-    niveau_ce1 = Niveau(libelle="CE1", ordre=6, couleur=couleur_pour_index(5))
-    niveau_ce2 = Niveau(libelle="CE2", ordre=7, couleur=couleur_pour_index(6))
-    niveau_cm1 = Niveau(libelle="CM1", ordre=8, couleur=couleur_pour_index(7))
-    niveau_cm2 = Niveau(libelle="CM2", ordre=9, couleur=couleur_pour_index(8))
+    niveau_tps = Niveau(libelle="TPS", ordre=1, couleur=couleur_pour_index(0, PALETTE_NIVEAUX))
+    niveau_ps = Niveau(libelle="PS", ordre=2, couleur=couleur_pour_index(1, PALETTE_NIVEAUX))
+    niveau_ms = Niveau(libelle="MS", ordre=3, couleur=couleur_pour_index(2, PALETTE_NIVEAUX))
+    niveau_gs = Niveau(libelle="GS", ordre=4, couleur=couleur_pour_index(3, PALETTE_NIVEAUX))
+    niveau_cp = Niveau(libelle="CP", ordre=5, couleur=couleur_pour_index(4, PALETTE_NIVEAUX))
+    niveau_ce1 = Niveau(libelle="CE1", ordre=6, couleur=couleur_pour_index(5, PALETTE_NIVEAUX))
+    niveau_ce2 = Niveau(libelle="CE2", ordre=7, couleur=couleur_pour_index(6, PALETTE_NIVEAUX))
+    niveau_cm1 = Niveau(libelle="CM1", ordre=8, couleur=couleur_pour_index(7, PALETTE_NIVEAUX))
+    niveau_cm2 = Niveau(libelle="CM2", ordre=9, couleur=couleur_pour_index(8, PALETTE_NIVEAUX))
     db.add_all([niveau_tps,niveau_ps, niveau_ms, niveau_gs, niveau_cp, niveau_ce1, niveau_ce2, niveau_cm1, niveau_cm2])
     db.flush()
 
-    ulis = Propriete(libelle="ULIS", couleur="#FFB4A2", icone="puzzle")
-    tdah = Propriete(libelle="TDAH", couleur="#A2D2FF", icone="bolt")
-    tsa = Propriete(libelle="TSA", couleur="#FF6B6B", icone="brain")
-    pai = Propriete(libelle="PAI", couleur="#C2A2EE", icone="puzzle")
-    pap = Propriete(libelle="PAP", couleur="#E2D2AA", icone="puzzle")
-    ime = Propriete(libelle="IME", couleur="#F9C74F", icone="bell")
-    bon_niveau = Propriete(libelle="Bon niveau", couleur="#B9FBC0", icone="star")
-    en_difficulte = Propriete(libelle="En difficulté", couleur="#F54927", icone="exclamation")
-    a_separer = Propriete(libelle="À séparer", couleur="#FFD6A5", icone="split")
-    redoublement = Propriete(libelle="Redoublement", couleur="#FCBA03", icone="redoublement")
-    db.add_all([ulis, tdah, tsa, pai, pap, ime, bon_niveau, en_difficulte, a_separer, redoublement])
+    ulis = Propriete(libelle="ULIS", couleur=couleur_pour_index(0, PALETTE_PROPRIETES), icone="puzzle")
+    tdah = Propriete(libelle="TDAH", couleur=couleur_pour_index(1, PALETTE_PROPRIETES), icone="bolt")
+    tsa = Propriete(libelle="TSA", couleur=couleur_pour_index(2, PALETTE_PROPRIETES), icone="brain")
+    pai = Propriete(libelle="PAI", couleur=couleur_pour_index(3, PALETTE_PROPRIETES), icone="puzzle")
+    pap = Propriete(libelle="PAP", couleur=couleur_pour_index(4, PALETTE_PROPRIETES), icone="puzzle")
+    ime = Propriete(libelle="IME", couleur=couleur_pour_index(5, PALETTE_PROPRIETES), icone="bell")
+    bon_niveau = Propriete(libelle="Bon niveau", couleur=couleur_pour_index(6, PALETTE_PROPRIETES), icone="star")
+    en_difficulte = Propriete(libelle="En difficulté", couleur=couleur_pour_index(7, PALETTE_PROPRIETES), icone="exclamation")
+    a_separer = Propriete(libelle="À séparer", couleur=couleur_pour_index(8, PALETTE_PROPRIETES), icone="split")
+    redoublement = Propriete(libelle="Redoublement", couleur=couleur_pour_index(9, PALETTE_PROPRIETES), icone="redoublement")
+    sauter_classe =  Propriete(libelle="Sauter de classe", couleur=couleur_pour_index(10, PALETTE_PROPRIETES), icone="star")
+    db.add_all([ulis, tdah, tsa, pai, pap, ime, bon_niveau, en_difficulte, a_separer, redoublement, sauter_classe])
     db.flush()
 
     # Classe d'origine (année N)
@@ -83,7 +84,7 @@ def seed_si_vide(db: Session) -> None:
 
     import random
     random.seed(44)
-    proprietes_dispo = [ulis, tdah, tsa,pai, pap, ime, bon_niveau, a_separer, en_difficulte, redoublement]
+    proprietes_dispo = [ulis, tdah, tsa,pai, pap, ime, bon_niveau, a_separer, en_difficulte, redoublement, sauter_classe]
 
     for i in range(28):
         sexe = "F" if i % 2 == 0 else "M"

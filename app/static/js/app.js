@@ -386,7 +386,7 @@ document.addEventListener("click", (evt) => {
   }
 });
 
-// ---------- Zone d'import ONDE (masquée par défaut) ----------
+// ---------- Zone d'import (masquée par défaut) — onglets ONDE + manuel ----------
 
 const zoneImport = document.getElementById("zone-import");
 const boutonToggleImport = document.getElementById("bouton-toggle-import");
@@ -401,6 +401,18 @@ boutonToggleImport.addEventListener("click", () => {
 
 boutonFermerImport.addEventListener("click", () => {
   zoneImport.hidden = true;
+});
+
+// Bascule entre les deux onglets
+document.querySelectorAll(".import-onglet").forEach((onglet) => {
+  onglet.addEventListener("click", () => {
+    document.querySelectorAll(".import-onglet").forEach((o) => o.classList.remove("import-onglet--actif"));
+    onglet.classList.add("import-onglet--actif");
+    const cible = onglet.dataset.onglet;
+    document.querySelectorAll(".import-onglet-corps").forEach((corps) => {
+      corps.hidden = corps.id !== `onglet-${cible}`;
+    });
+  });
 });
 
 document.querySelectorAll(".pastille-couleur").forEach((pastille) => {
@@ -522,9 +534,43 @@ function initialiserFormulaireImport() {
   });
 }
 
+// ---------- Ajout manuel d'un élève ----------
+
+function initialiserFormulaireNouvelEleve() {
+  const formulaire = document.getElementById("form-nouvel-eleve");
+  if (!formulaire) return;
+
+  formulaire.addEventListener("submit", async (evt) => {
+    evt.preventDefault();
+    const rapport = document.getElementById("rapport-nouvel-eleve");
+    rapport.textContent = "";
+
+    const payload = {
+      nom: document.getElementById("nouvel-eleve-nom").value.trim().toUpperCase(),
+      prenom: document.getElementById("nouvel-eleve-prenom").value.trim(),
+      sexe: document.getElementById("nouvel-eleve-sexe").value,
+      niveau_id: parseInt(document.getElementById("nouvel-eleve-niveau").value, 10),
+      classe_id: parseInt(document.getElementById("nouvel-eleve-classe").value, 10),
+    };
+
+    try {
+      const resultat = await appelApi("/api/eleves", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      afficherToast(`${resultat.prenom} ${resultat.nom} ajouté(e) ✓`);
+      rapport.textContent = `✓ ${resultat.prenom} ${resultat.nom} ajouté(e)`;
+      formulaire.reset();
+      // Rafraîchit uniquement la carte de la classe concernée
+      await rafraichirCarte(payload.classe_id, true);
+    } catch (e) { /* déjà notifié par appelApi */ }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".colonne-canvas").forEach(initialiserToutLeCanevas);
   initialiserFormulaireImport();
+  initialiserFormulaireNouvelEleve();
   initialiserZoneDepart();
 });
 

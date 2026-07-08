@@ -13,6 +13,38 @@ router = APIRouter()
 templates = Jinja2Templates(directory=str(settings.templates_dir))
 
 
+class NouvelEleveIn(BaseModel):
+    nom: str
+    prenom: str
+    sexe: str         # "F" ou "M"
+    niveau_id: int
+    classe_id: int    # classe d'origine
+
+
+@router.post("/api/eleves")
+def creer_eleve(payload: NouvelEleveIn, db: Session = Depends(get_db)):
+    """Crée un élève manuellement (inscription en cours d'année)."""
+    from app.core.models import Niveau, Classe as ClasseModel
+    if db.get(Niveau, payload.niveau_id) is None:
+        raise HTTPException(400, "Niveau introuvable")
+    if db.get(ClasseModel, payload.classe_id) is None:
+        raise HTTPException(400, "Classe introuvable")
+    if payload.sexe not in ("F", "M"):
+        raise HTTPException(400, "Sexe invalide (F ou M)")
+
+    eleve = Eleve(
+        nom=payload.nom.strip().upper(),
+        prenom=payload.prenom.strip(),
+        sexe=payload.sexe,
+        niveau_id=payload.niveau_id,
+        classe_origine_id=payload.classe_id,
+    )
+    db.add(eleve)
+    db.commit()
+    db.refresh(eleve)
+    return {"id": eleve.id, "nom": eleve.nom, "prenom": eleve.prenom}
+
+
 class DepartEleveIn(BaseModel):
     eleve_ids: list[int]
 
