@@ -364,6 +364,90 @@ formRegle.addEventListener("submit", async (evt) => {
   } catch (e) { /* déjà notifié par appelApi */ }
 });
 
+// ---------- Bascule d'année scolaire ----------
+
+const modaleBascule = document.getElementById("modale-bascule");
+const boutonNouvelleAnnee = document.getElementById("bouton-nouvelle-annee");
+const boutonAnnulerBascule = document.getElementById("bouton-annuler-bascule");
+const boutonConfirmerBascule = document.getElementById("bouton-confirmer-bascule");
+
+boutonNouvelleAnnee.addEventListener("click", async () => {
+  // Réinitialise la modale
+  document.getElementById("bascule-bilan").innerHTML = '<p class="legende-vide">Chargement du bilan…</p>';
+  document.getElementById("bascule-avertissement").hidden = true;
+  boutonConfirmerBascule.disabled = true;
+  modaleBascule.hidden = false;
+
+  try {
+    const bilan = await appelApi("/api/admin/bascule/bilan");
+    if (bilan.erreur) {
+      document.getElementById("bascule-bilan").innerHTML = `<p class="legende-vide">${bilan.erreur}</p>`;
+      return;
+    }
+
+    // Affichage du bilan
+    const nbClasses = bilan.nb_classes_n1;
+    const nbPlaces = bilan.nb_eleves_places;
+    const nbNonPlaces = bilan.nb_eleves_non_places;
+
+    const lignesClasses = bilan.noms_classes_n1.map(
+      (nom) => `<div class="bascule-ligne"><span class="bascule-ligne__label">📚 ${nom}</span>
+                 <span class="bascule-ligne__valeur--ok bascule-ligne__valeur">→ classe N</span></div>`
+    ).join("");
+
+    document.getElementById("bascule-bilan").innerHTML = `
+      <div class="bascule-fleche">${bilan.annee_n1} devient la nouvelle année en cours</div>
+      ${lignesClasses}
+      <div class="bascule-ligne">
+        <span class="bascule-ligne__label">👤 Élèves placés</span>
+        <span class="bascule-ligne__valeur bascule-ligne__valeur--ok">${nbPlaces} continuent</span>
+      </div>
+      ${nbNonPlaces > 0 ? `<div class="bascule-ligne">
+        <span class="bascule-ligne__label">⚠️ Élèves non affectés</span>
+        <span class="bascule-ligne__valeur bascule-ligne__valeur--warn">${nbNonPlaces} seront supprimés</span>
+      </div>` : ""}
+      <div class="bascule-fleche">Nouvelle année N+1 créée : <strong>${bilan.libelle_nouvelle_n1}</strong> (vide)</div>
+    `;
+
+    // Avertissement élèves non placés
+    if (nbNonPlaces > 0) {
+      const liste = document.getElementById("bascule-liste-non-places");
+      liste.innerHTML = bilan.noms_eleves_non_places
+        .map((nom) => `<li>${nom}</li>`)
+        .join("");
+      document.getElementById("bascule-avertissement").hidden = false;
+    }
+
+    boutonConfirmerBascule.disabled = false;
+
+  } catch (e) {
+    document.getElementById("bascule-bilan").innerHTML =
+      '<p class="legende-vide">Erreur lors du chargement du bilan.</p>';
+  }
+});
+
+boutonAnnulerBascule.addEventListener("click", () => { modaleBascule.hidden = true; });
+modaleBascule.addEventListener("click", (evt) => {
+  if (evt.target === modaleBascule) modaleBascule.hidden = true;
+});
+
+boutonConfirmerBascule.addEventListener("click", async () => {
+  boutonConfirmerBascule.disabled = true;
+  boutonConfirmerBascule.textContent = "Bascule en cours…";
+  try {
+    const resultat = await appelApi("/api/admin/bascule/executer", { method: "POST" });
+    afficherToast(
+      `✓ Nouvelle année ${resultat.nouvelle_annee_n} démarrée — ` +
+      `${resultat.nb_eleves_bascules} élève(s) transférés`
+    );
+    modaleBascule.hidden = true;
+    setTimeout(() => { window.location.href = "/"; }, 1500);
+  } catch (e) {
+    boutonConfirmerBascule.disabled = false;
+    boutonConfirmerBascule.textContent = "✓ Confirmer et démarrer la nouvelle année";
+  }
+});
+
 // ---------- Réinitialisation ----------
 
 document.getElementById("bouton-reinitialiser").addEventListener("click", async () => {

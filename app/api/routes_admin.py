@@ -131,6 +131,23 @@ def supprimer_regle(regle_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 
+# ---------- Bascule d'année scolaire ----------
+
+@router.get("/api/admin/bascule/bilan")
+def bilan_bascule(db: Session = Depends(get_db)):
+    from app.services.bascule_annee import bilan_bascule as _bilan
+    return _bilan(db)
+
+
+@router.post("/api/admin/bascule/executer")
+def executer_bascule(db: Session = Depends(get_db)):
+    from app.services.bascule_annee import executer_bascule as _executer
+    try:
+        return _executer(db)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+
+
 # ---------- Réinitialisation ----------
 
 @router.post("/api/admin/reinitialiser")

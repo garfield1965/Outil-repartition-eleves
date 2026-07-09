@@ -135,6 +135,22 @@
     </section>
 
     {# ---------- Réinitialisation (pas d'accordéon : zone danger toujours visible) ---------- #}
+    {# ---------- Nouvelle année scolaire ---------- #}
+    <section class="section-admin section-admin--nouvelle-annee">
+      <div class="section-admin__entete">
+        <h2>🎓 Démarrer la nouvelle année scolaire</h2>
+      </div>
+      <p>
+        Fait basculer les classes N+1 en classes N : les élèves placés
+        héritent de leur nouvelle classe comme classe d'origine, et une
+        nouvelle année N+2 vide est créée pour le prochain cycle de
+        répartition. Les élèves non affectés sont supprimés.
+      </p>
+      <button class="bouton bouton-nouvelle-annee" id="bouton-nouvelle-annee">
+        🎓 Préparer la nouvelle année
+      </button>
+    </section>
+
     <section class="section-admin section-admin--danger">
       <div class="section-admin__entete">
         <h2>Réinitialisation</h2>
@@ -254,6 +270,32 @@
         <button type="submit" class="bouton">Enregistrer</button>
       </div>
     </form>
+  </div>
+
+  {# ---------- Modale bascule d'année ---------- #}
+  <div id="modale-bascule" class="modale-fond" hidden>
+    <div class="modale-carte modale-bascule">
+      <div class="modale-bascule__icone">🎓</div>
+      <h2>Nouvelle année scolaire</h2>
+
+      <div id="bascule-bilan" class="bascule-bilan">
+        <p class="legende-vide">Chargement…</p>
+      </div>
+
+      <div id="bascule-avertissement" class="bascule-avertissement" hidden>
+        <p>⚠️ <strong>Élèves non encore affectés</strong> — ils seront supprimés si vous continuez :</p>
+        <ul id="bascule-liste-non-places"></ul>
+      </div>
+
+      <p class="bascule-irreversible">Cette action est irréversible.</p>
+
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-bascule">Annuler</button>
+        <button type="button" class="bouton bouton-nouvelle-annee" id="bouton-confirmer-bascule" disabled>
+          ✓ Confirmer et démarrer la nouvelle année
+        </button>
+      </div>
+    </div>
   </div>
 
   <div id="toast" class="toast"></div>

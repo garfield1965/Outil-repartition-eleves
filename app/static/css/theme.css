@@ -919,6 +919,82 @@ body {
 .bouton-danger { background: #d64545; }
 .bouton-danger:hover { background: #b3401f; }
 
+/* ---------- Section et modale Nouvelle année scolaire ---------- */
+
+.section-admin--nouvelle-annee {
+  border: 2px dashed #b3d9a4;
+  background: #f4fbf1;
+}
+.section-admin--nouvelle-annee h2 { color: #2d6a1f; }
+
+.bouton-nouvelle-annee {
+  background: #3a8a28;
+}
+.bouton-nouvelle-annee:hover { background: #2d6a1f; }
+.bouton-nouvelle-annee:disabled {
+  background: #a0c899;
+  cursor: not-allowed;
+}
+
+.modale-bascule {
+  max-width: 500px;
+  width: 100%;
+}
+.modale-bascule__icone {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.bascule-bilan {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.bascule-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+.bascule-ligne__label { color: var(--ink-soft); font-weight: 600; }
+.bascule-ligne__valeur { font-weight: 800; color: var(--ink); text-align: right; }
+.bascule-ligne__valeur--ok { color: #2d6a1f; }
+.bascule-ligne__valeur--warn { color: #b3401f; }
+.bascule-fleche {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.05em;
+}
+
+.bascule-avertissement {
+  background: #ffe9e1;
+  border: 1px solid #f3b6a4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 0.84rem;
+}
+.bascule-avertissement ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.bascule-irreversible {
+  font-size: 0.8rem;
+  color: #b3401f;
+  font-weight: 700;
+  text-align: center;
+  margin: 4px 0 0;
+}
+
 .tableau-referentiel { display: flex; flex-direction: column; gap: 8px; }
 .ligne-referentiel {
   display: flex;
