@@ -37,8 +37,19 @@
             <div class="ligne-referentiel" data-id="{{ n.id }}">
               <span class="pastille-legende" style="background:{{ n.couleur }}"></span>
               <span class="ligne-referentiel__libelle">{{ n.libelle }}</span>
-              <span class="ligne-referentiel__detail">ordre {{ n.ordre }}</span>
+              <span class="ligne-referentiel__detail">
+                ordre {{ n.ordre }}
+                {% if n.cycle %} · <span class="badge-cycle">{{ n.cycle.libelle }}</span>{% endif %}
+              </span>
               <span class="ligne-referentiel__actions">
+                <select class="select-cycle-niveau" data-niveau-id="{{ n.id }}" title="Affecter à un cycle">
+                  <option value="">— Aucun cycle —</option>
+                  {% for c in cycles %}
+                    <option value="{{ c.id }}" {% if n.cycle and n.cycle.id == c.id %}selected{% endif %}>
+                      {{ c.libelle }}
+                    </option>
+                  {% endfor %}
+                </select>
                 <button class="icone-action bouton-modifier-niveau" title="Modifier"
                         data-id="{{ n.id }}" data-libelle="{{ n.libelle }}"
                         data-couleur="{{ n.couleur }}" data-ordre="{{ n.ordre }}">✎</button>
@@ -49,6 +60,50 @@
           {% endfor %}
           {% if not niveaux %}
             <p class="legende-vide">Aucun niveau pour le moment</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    {# ---------- Accordéon Cycles ---------- #}
+    <section class="section-admin accordeon" data-accordeon="cycles">
+      <button type="button" class="accordeon__entete" aria-expanded="false" aria-controls="corps-cycles">
+        <span class="accordeon__titre">
+          <span class="accordeon__icone">▸</span>
+          Cycles pédagogiques
+          <span class="accordeon__compteur">{{ cycles|length }}</span>
+        </span>
+        <button type="button" class="bouton secondaire bouton-petit accordeon__action" id="bouton-creer-cycle"
+                onclick="event.stopPropagation()">+ Ajouter</button>
+      </button>
+      <div class="accordeon__corps" id="corps-cycles" hidden>
+        <p class="accordeon__description">
+          Un cycle regroupe plusieurs niveaux. Exemple : Cycle 2 = CP, CE1, CE2.
+          Affectez chaque niveau à son cycle depuis la section <strong>Niveaux</strong> ci-dessus.
+        </p>
+        <div class="tableau-referentiel">
+          {% for c in cycles %}
+            <div class="ligne-referentiel" data-id="{{ c.id }}">
+              <span class="badge-cycle badge-cycle--grand">C{{ c.ordre }}</span>
+              <span class="ligne-referentiel__libelle">{{ c.libelle }}</span>
+              <span class="ligne-referentiel__detail">
+                {{ c.description or "—" }}
+                {% if c.niveaux %}
+                  · <em>{{ c.niveaux|map(attribute='libelle')|join(', ') }}</em>
+                {% endif %}
+              </span>
+              <span class="ligne-referentiel__actions">
+                <button class="icone-action bouton-modifier-cycle" title="Modifier"
+                        data-id="{{ c.id }}" data-libelle="{{ c.libelle }}"
+                        data-description="{{ c.description or '' }}"
+                        data-ordre="{{ c.ordre }}">✎</button>
+                <button class="icone-action bouton-supprimer-cycle" title="Supprimer"
+                        data-id="{{ c.id }}" data-libelle="{{ c.libelle }}">🗑</button>
+              </span>
+            </div>
+          {% endfor %}
+          {% if not cycles %}
+            <p class="legende-vide">Aucun cycle défini — créez Cycle 1, 2 et 3 puis affectez les niveaux.</p>
           {% endif %}
         </div>
       </div>
@@ -165,6 +220,30 @@
     </section>
 
   </main>
+
+  {# ---------- Modale cycle ---------- #}
+  <div id="modale-cycle" class="modale-fond" hidden>
+    <form id="form-cycle" class="modale-carte">
+      <h2 id="modale-cycle-titre">Nouveau cycle</h2>
+      <input type="hidden" id="champ-cycle-id">
+      <label class="champ">
+        Libellé
+        <input type="text" id="champ-cycle-libelle" required placeholder="ex: Cycle 2">
+      </label>
+      <label class="champ">
+        Description (niveaux inclus)
+        <input type="text" id="champ-cycle-description" placeholder="ex: CP, CE1, CE2">
+      </label>
+      <label class="champ">
+        Ordre d'affichage
+        <input type="number" id="champ-cycle-ordre" value="1" min="1" step="1">
+      </label>
+      <div class="modale-actions">
+        <button type="button" class="bouton secondaire" id="bouton-annuler-cycle">Annuler</button>
+        <button type="submit" class="bouton">Enregistrer</button>
+      </div>
+    </form>
+  </div>
 
   {# ---------- Modale niveau ---------- #}
   <div id="modale-niveau" class="modale-fond" hidden>

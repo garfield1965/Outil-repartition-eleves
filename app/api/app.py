@@ -15,7 +15,7 @@ from app.services.seed import seed_si_vide
 
 from app.api import (
     routes_classes, routes_eleves, routes_import, routes_stats,
-    routes_classes_gestion, routes_admin, routes_export,
+    routes_classes_gestion, routes_admin, routes_export, routes_cycles,
 )
 
 
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_classes_gestion.router)
     app.include_router(routes_admin.router)
     app.include_router(routes_export.router)
+    app.include_router(routes_cycles.router)
 
     return app
 

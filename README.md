@@ -71,6 +71,8 @@ jeu de données de démonstration (2 classes CE1 et Ce1/CE2 vers 3 classes 1 CM1
     palette). Un niveau utilisé par au moins un élève ne peut pas être
     supprimé (message explicite) ; une propriété, elle, peut toujours être
     supprimée — elle est simplement retirée des élèves qui l'avaient.
+  - **Démarrer la nouvelle année** : Permet de deplacer l'ensemble des classes
+    avec leur éléves, pour préparer une nouvelle année.
   - **Réinitialisation des données** : supprime toutes les années, classes,
     élèves et historiques de déplacement, tout en **conservant les niveaux,
     propriétés et règles de gestion déjà définis**. Pratique en début

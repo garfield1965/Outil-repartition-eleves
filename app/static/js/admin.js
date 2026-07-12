@@ -364,6 +364,79 @@ formRegle.addEventListener("submit", async (evt) => {
   } catch (e) { /* déjà notifié par appelApi */ }
 });
 
+// ---------- Cycles pédagogiques ----------
+
+const modaleCycle = document.getElementById("modale-cycle");
+const formCycle = document.getElementById("form-cycle");
+
+document.getElementById("bouton-creer-cycle")?.addEventListener("click", () => {
+  formCycle.reset();
+  document.getElementById("champ-cycle-id").value = "";
+  document.getElementById("modale-cycle-titre").textContent = "Nouveau cycle";
+  modaleCycle.hidden = false;
+});
+document.getElementById("bouton-annuler-cycle")?.addEventListener("click", () => { modaleCycle.hidden = true; });
+modaleCycle?.addEventListener("click", (evt) => { if (evt.target === modaleCycle) modaleCycle.hidden = true; });
+
+document.querySelectorAll(".bouton-modifier-cycle").forEach((bouton) => {
+  bouton.addEventListener("click", () => {
+    formCycle.reset();
+    document.getElementById("champ-cycle-id").value = bouton.dataset.id;
+    document.getElementById("champ-cycle-libelle").value = bouton.dataset.libelle;
+    document.getElementById("champ-cycle-description").value = bouton.dataset.description || "";
+    document.getElementById("champ-cycle-ordre").value = bouton.dataset.ordre;
+    document.getElementById("modale-cycle-titre").textContent = "Modifier le cycle";
+    modaleCycle.hidden = false;
+  });
+});
+
+document.querySelectorAll(".bouton-supprimer-cycle").forEach((bouton) => {
+  bouton.addEventListener("click", async () => {
+    if (!confirm(`Supprimer le cycle "${bouton.dataset.libelle}" ? Les niveaux rattachés seront délié mais pas supprimés.`)) return;
+    try {
+      await appelApi(`/api/cycles/${bouton.dataset.id}`, { method: "DELETE" });
+      afficherToast("Cycle supprimé ✓");
+      setTimeout(() => location.reload(), 700);
+    } catch (e) {}
+  });
+});
+
+formCycle?.addEventListener("submit", async (evt) => {
+  evt.preventDefault();
+  const id = document.getElementById("champ-cycle-id").value;
+  const payload = {
+    libelle: document.getElementById("champ-cycle-libelle").value,
+    description: document.getElementById("champ-cycle-description").value || null,
+    ordre: parseInt(document.getElementById("champ-cycle-ordre").value || "1", 10),
+  };
+  try {
+    if (id) {
+      await appelApi(`/api/cycles/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+      afficherToast("Cycle modifié ✓");
+    } else {
+      await appelApi(`/api/cycles`, { method: "POST", body: JSON.stringify(payload) });
+      afficherToast("Cycle créé 🎉");
+    }
+    modaleCycle.hidden = true;
+    setTimeout(() => location.reload(), 500);
+  } catch (e) {}
+});
+
+// Affectation rapide d'un niveau à un cycle via le select inline
+document.querySelectorAll(".select-cycle-niveau").forEach((select) => {
+  select.addEventListener("change", async () => {
+    const niveauId = select.dataset.niveauId;
+    const cycleId = select.value ? parseInt(select.value, 10) : null;
+    try {
+      await appelApi(`/api/niveaux/${niveauId}/cycle`, {
+        method: "PATCH",
+        body: JSON.stringify({ cycle_id: cycleId }),
+      });
+      afficherToast("Cycle mis à jour ✓");
+    } catch (e) {}
+  });
+});
+
 // ---------- Bascule d'année scolaire ----------
 
 const modaleBascule = document.getElementById("modale-bascule");

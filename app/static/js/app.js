@@ -307,7 +307,7 @@ const boutonStatsEcole = document.getElementById("bouton-stats-ecole");
 const boutonFermerStats = document.getElementById("bouton-fermer-stats");
 const contenuStats = document.getElementById("contenu-stats-ecole");
 
-function construireHtmlStats(data) {
+function construireHtmlStats(data, dataCycles) {
   function blocAnnee(stats, annee) {
     if (!stats) {
       return `<div class="stats-bloc">
@@ -349,8 +349,69 @@ function construireHtmlStats(data) {
     </div>`;
   }
 
+  // Bloc cycles (affiché en pleine largeur sous les deux colonnes)
+  let blocCycles = "";
+  if (dataCycles && !dataCycles.erreur && dataCycles.cycles && dataCycles.cycles.length > 0) {
+    const colonnesN = (dataCycles.effectifs_n || []).reduce((acc, e) => {
+      acc[e.cycle_id] = e; return acc;
+    }, {});
+    const colonnesN1 = (dataCycles.effectifs_n1 || []).reduce((acc, e) => {
+      acc[e.cycle_id] = e; return acc;
+    }, {});
+
+    const lignesCycles = dataCycles.cycles.map(c => {
+      const n = colonnesN[c.id];
+      const n1 = colonnesN1[c.id];
+      return `<tr>
+        <td><strong>${c.libelle}</strong><br><small style="color:var(--ink-soft)">${c.niveaux.join(", ") || "—"}</small></td>
+        <td class="stats-cycle-cell">${n ? `<strong>${n.nb}</strong><br><small>${n.filles}F / ${n.garcons}G</small>` : "—"}</td>
+        <td class="stats-cycle-cell">${n1 ? `<strong>${n1.nb}</strong><br><small>${n1.filles}F / ${n1.garcons}G</small>` : "—"}</td>
+      </tr>`;
+    }).join("");
+
+    // Transitions inter-cycles
+    const transitionsInterCycles = (dataCycles.transitions || []).filter(t => t.changement);
+    const lignesTransitions = transitionsInterCycles.length > 0
+      ? transitionsInterCycles.map(t =>
+          `<div class="stats-transition">
+            <span>${t.cycle_src}</span>
+            <span class="stats-transition__fleche">→</span>
+            <span>${t.cycle_dst}</span>
+            <span class="stats-transition__nb">${t.nb} élève${t.nb > 1 ? "s" : ""}</span>
+          </div>`
+        ).join("")
+      : `<p class="stats-vide">Aucun changement de cycle prévu</p>`;
+
+    blocCycles = `
+      <div class="stats-bloc stats-bloc--full">
+        <div class="stats-bloc__titre">Effectifs par cycle</div>
+        <table class="stats-table-cycles">
+          <thead>
+            <tr>
+              <th>Cycle</th>
+              <th>Année en cours<br><small>${dataCycles.annee_n}</small></th>
+              <th>Année prochaine<br><small>${dataCycles.annee_n1}</small></th>
+            </tr>
+          </thead>
+          <tbody>${lignesCycles}</tbody>
+        </table>
+      </div>
+      <div class="stats-bloc stats-bloc--full">
+        <div class="stats-bloc__titre">
+          Passages inter-cycles
+          ${dataCycles.nb_changements_cycle > 0
+            ? `<span class="accordeon__compteur">${dataCycles.nb_changements_cycle} élève${dataCycles.nb_changements_cycle > 1 ? "s" : ""}</span>`
+            : ""}
+        </div>
+        ${lignesTransitions}
+      </div>`;
+  } else if (dataCycles && dataCycles.erreur) {
+    blocCycles = `<div class="stats-bloc stats-bloc--full"><p class="stats-vide">${dataCycles.erreur}</p></div>`;
+  }
+
   return blocAnnee(data.annee_n, "Année en cours (N)") +
-         blocAnnee(data.annee_n1, "Année prochaine (N+1)");
+         blocAnnee(data.annee_n1, "Année prochaine (N+1)") +
+         blocCycles;
 }
 
 boutonStatsEcole.addEventListener("click", async (evt) => {
@@ -358,8 +419,11 @@ boutonStatsEcole.addEventListener("click", async (evt) => {
   contenuStats.innerHTML = '<p class="legende-vide">Chargement…</p>';
   modaleStatsEcole.hidden = false;
   try {
-    const data = await appelApi("/api/stats/ecole/global");
-    contenuStats.innerHTML = construireHtmlStats(data);
+    const [data, dataCycles] = await Promise.all([
+      appelApi("/api/stats/ecole/global"),
+      appelApi("/api/stats/cycles"),
+    ]);
+    contenuStats.innerHTML = construireHtmlStats(data, dataCycles);
   } catch (e) {
     contenuStats.innerHTML = '<p class="legende-vide">Erreur lors du chargement.</p>';
   }

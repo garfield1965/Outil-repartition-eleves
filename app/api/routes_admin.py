@@ -22,9 +22,11 @@ templates = Jinja2Templates(directory=str(settings.templates_dir))
 
 @router.get("/admin")
 def page_admin(request: Request, db: Session = Depends(get_db)):
+    from app.services.gestion_cycles import lister_cycles
     niveaux = db.query(Niveau).order_by(Niveau.ordre, Niveau.libelle).all()
     proprietes = db.query(Propriete).order_by(Propriete.libelle).all()
     regles = service_regles.lister_regles(db)
+    cycles = lister_cycles(db)
     return templates.TemplateResponse(
         "admin.html",
         {
@@ -32,6 +34,7 @@ def page_admin(request: Request, db: Session = Depends(get_db)):
             "niveaux": niveaux,
             "proprietes": proprietes,
             "regles": regles,
+            "cycles": cycles,
             "types_regle": service_regles.TYPES_REGLE,
             "asset_version": version_assets("css/theme.css", "js/admin.js"),
         },

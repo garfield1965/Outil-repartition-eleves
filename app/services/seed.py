@@ -4,8 +4,8 @@ Permet de tester l'appli (drag&drop, stats...) sans attendre un vrai export ONDE
 """
 from sqlalchemy.orm import Session
 
-from app.core.models import Annee, Niveau, Classe, Eleve, Propriete
-from app.core.palette import couleur_pour_index, PALETTE_NIVEAUX,   PALETTE_PROPRIETES
+from app.core.models import Annee, Niveau, Classe, Eleve, Propriete, Cycle
+from app.core.palette import couleur_pour_index,PALETTE_PROPRIETES, PALETTE_NIVEAUX
 
 PRENOMS_F = ["Emma", "Léa", "Chloé", "Manon", "Inès", "Camille", "Jade", "Louise", "Lucie", "Sarah", "Mia", "Lina", "Zoé", "Clara", "Juliette", "Ambre", "Rose", "Anaïs"]
 PRENOMS_M = ["Lucas", "Hugo", "Nathan", "Léo", "Gabriel", "Raphaël", "Tom", "Adam","Francis","Thomas","Louis","Arthur","Ethan","Noah","Paul","Maxime","Clément","Mathis","Alexandre"]
@@ -16,20 +16,27 @@ def seed_si_vide(db: Session) -> None:
     if db.query(Annee).count() > 0:
         return  # déjà initialisé
 
+    # Cycles pédagogiques
+    cycle1 = Cycle(libelle="Cycle 1", description="TPS, PS, MS, GS", ordre=1)
+    cycle2 = Cycle(libelle="Cycle 2", description="CP, CE1, CE2", ordre=2)
+    cycle3 = Cycle(libelle="Cycle 3", description="CM1, CM2", ordre=3)
+    db.add_all([cycle1, cycle2, cycle3])
+    db.flush()
+
     annee_n = Annee(libelle="2025-2026", est_annee_origine=True)
     annee_n1 = Annee(libelle="2026-2027", est_annee_cible=True)
     db.add_all([annee_n, annee_n1])
     db.flush()
 
-    niveau_tps = Niveau(libelle="TPS", ordre=1, couleur=couleur_pour_index(0, PALETTE_NIVEAUX))
-    niveau_ps = Niveau(libelle="PS", ordre=2, couleur=couleur_pour_index(1, PALETTE_NIVEAUX))
-    niveau_ms = Niveau(libelle="MS", ordre=3, couleur=couleur_pour_index(2, PALETTE_NIVEAUX))
-    niveau_gs = Niveau(libelle="GS", ordre=4, couleur=couleur_pour_index(3, PALETTE_NIVEAUX))
-    niveau_cp = Niveau(libelle="CP", ordre=5, couleur=couleur_pour_index(4, PALETTE_NIVEAUX))
-    niveau_ce1 = Niveau(libelle="CE1", ordre=6, couleur=couleur_pour_index(5, PALETTE_NIVEAUX))
-    niveau_ce2 = Niveau(libelle="CE2", ordre=7, couleur=couleur_pour_index(6, PALETTE_NIVEAUX))
-    niveau_cm1 = Niveau(libelle="CM1", ordre=8, couleur=couleur_pour_index(7, PALETTE_NIVEAUX))
-    niveau_cm2 = Niveau(libelle="CM2", ordre=9, couleur=couleur_pour_index(8, PALETTE_NIVEAUX))
+    niveau_tps = Niveau(libelle="TPS", ordre=1, couleur=couleur_pour_index(0, PALETTE_NIVEAUX),  cycle_id=cycle1.id)
+    niveau_ps = Niveau(libelle="PS", ordre=2, couleur=couleur_pour_index(1, PALETTE_NIVEAUX), cycle_id=cycle1.id)
+    niveau_ms = Niveau(libelle="MS", ordre=3, couleur=couleur_pour_index(2, PALETTE_NIVEAUX), cycle_id=cycle1.id)
+    niveau_gs = Niveau(libelle="GS", ordre=4, couleur=couleur_pour_index(3, PALETTE_NIVEAUX), cycle_id=cycle1.id)
+    niveau_cp = Niveau(libelle="CP", ordre=5, couleur=couleur_pour_index(4, PALETTE_NIVEAUX), cycle_id=cycle2.id)
+    niveau_ce1 = Niveau(libelle="CE1", ordre=6, couleur=couleur_pour_index(5, PALETTE_NIVEAUX), cycle_id=cycle2.id)
+    niveau_ce2 = Niveau(libelle="CE2", ordre=7, couleur=couleur_pour_index(6, PALETTE_NIVEAUX), cycle_id=cycle2.id)
+    niveau_cm1 = Niveau(libelle="CM1", ordre=8, couleur=couleur_pour_index(7, PALETTE_NIVEAUX), cycle_id=cycle3.id)
+    niveau_cm2 = Niveau(libelle="CM2", ordre=9, couleur=couleur_pour_index(8, PALETTE_NIVEAUX), cycle_id=cycle3.id  )
     db.add_all([niveau_tps,niveau_ps, niveau_ms, niveau_gs, niveau_cp, niveau_ce1, niveau_ce2, niveau_cm1, niveau_cm2])
     db.flush()
 
@@ -49,7 +56,7 @@ def seed_si_vide(db: Session) -> None:
 
     # Classe d'origine (année N)
     classe_origine = Classe(
-        nom="CE2 M X", annee_id=annee_n.id, couleur="#A2D2FF",
+        nom="CE2 Mme Dupont", annee_id=annee_n.id, couleur="#A2D2FF",
         position_x=20, position_y=20,
     )
     classe_origine.niveaux = [niveau_ce2]
@@ -83,8 +90,8 @@ def seed_si_vide(db: Session) -> None:
     db.flush()
 
     import random
-    random.seed(44)
-    proprietes_dispo = [ulis, tdah, tsa,pai, pap, ime, bon_niveau, a_separer, en_difficulte, redoublement, sauter_classe]
+    random.seed(42)
+    proprietes_dispo = [ulis, tdah, bon_niveau, a_separer]
 
     for i in range(28):
         sexe = "F" if i % 2 == 0 else "M"

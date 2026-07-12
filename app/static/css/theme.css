@@ -563,6 +563,54 @@ body {
   max-height: 70vh;
   overflow-y: auto;
 }
+/* Bloc pleine largeur (cycles) : occupe les 2 colonnes */
+.stats-bloc--full {
+  grid-column: 1 / -1;
+}
+
+.stats-table-cycles {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin-top: 6px;
+}
+.stats-table-cycles th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--ligne);
+}
+.stats-table-cycles td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ligne);
+  vertical-align: middle;
+}
+.stats-table-cycles tr:last-child td { border-bottom: none; }
+.stats-table-cycles tr:nth-child(even) td { background: var(--bg); }
+.stats-cycle-cell { text-align: center; }
+
+.stats-transition {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: color-mix(in srgb, #6FB7E8 12%, white);
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.stats-transition__fleche { color: var(--ink-soft); font-size: 1rem; }
+.stats-transition__nb {
+  margin-left: auto;
+  background: #6FB7E8;
+  color: white;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+}
 
 .stats-bloc {
   display: flex;
@@ -1006,7 +1054,36 @@ body {
 }
 .ligne-referentiel__libelle { font-weight: 700; flex: 1; }
 .ligne-referentiel__detail { font-size: 0.78rem; color: var(--ink-soft); }
-.ligne-referentiel__actions { display: flex; gap: 4px; }
+.ligne-referentiel__actions { display: flex; gap: 4px; align-items: center; }
+
+/* Badge cycle affiché dans la liste des niveaux */
+.badge-cycle {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: color-mix(in srgb, #6FB7E8 20%, white);
+  color: #2a5f80;
+  border: 1px solid color-mix(in srgb, #6FB7E8 40%, white);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.badge-cycle--grand {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+}
+
+/* Select rapide pour rattacher un niveau à un cycle directement depuis la liste */
+.select-cycle-niveau {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  border: 1px solid var(--ligne);
+  border-radius: 8px;
+  padding: 3px 6px;
+  background: var(--bg);
+  cursor: pointer;
+  max-width: 130px;
+}
 
 @media (max-width: 900px) {
   .plateau { flex-direction: column; }

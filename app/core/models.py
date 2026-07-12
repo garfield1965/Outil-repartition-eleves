@@ -43,15 +43,34 @@ class Annee(Base):
     classes = relationship("Classe", back_populates="annee")
 
 
+class Cycle(Base):
+    """
+    Regroupement pédagogique de niveaux.
+    Cycle 1 : TPS, PS, MS, GS
+    Cycle 2 : CP, CE1, CE2
+    Cycle 3 : CM1, CM2
+    """
+    __tablename__ = "cycles"
+
+    id = Column(Integer, primary_key=True)
+    libelle = Column(String, nullable=False, unique=True)  # ex : "Cycle 2"
+    description = Column(String, nullable=True)            # ex : "CP, CE1, CE2"
+    ordre = Column(Integer, default=0)
+
+    niveaux = relationship("Niveau", back_populates="cycle")
+
+
 class Niveau(Base):
     """Un niveau scolaire : CP, CE1, CE2, CM1, CM2..."""
     __tablename__ = "niveaux"
 
     id = Column(Integer, primary_key=True)
     libelle = Column(String, nullable=False, unique=True)
-    ordre = Column(Integer, default=0)  # pour trier CP < CE1 < CE2...
-    couleur = Column(String, default="#A2D2FF")  # couleur d'identification du niveau
+    ordre = Column(Integer, default=0)
+    couleur = Column(String, default="#A2D2FF")
+    cycle_id = Column(Integer, ForeignKey("cycles.id"), nullable=True)
 
+    cycle = relationship("Cycle", back_populates="niveaux")
     classes = relationship("Classe", secondary=classe_niveau, back_populates="niveaux")
     eleves = relationship("Eleve", back_populates="niveau")
 

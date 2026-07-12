@@ -173,3 +173,26 @@ class RegleUpdateIn(BaseModel):
     propriete_id: Optional[int] = None
     actif: Optional[bool] = None
 
+
+class CycleOut(BaseModel):
+    id: int
+    libelle: str
+    description: Optional[str] = None
+    ordre: int
+    niveaux: list[str] = []
+
+    class Config:
+        from_attributes = True
+
+
+class CycleCreateIn(BaseModel):
+    libelle: str
+    description: Optional[str] = None
+    ordre: int = 0
+
+
+class CycleUpdateIn(BaseModel):
+    libelle: Optional[str] = None
+    description: Optional[str] = None
+    ordre: Optional[int] = None
+
